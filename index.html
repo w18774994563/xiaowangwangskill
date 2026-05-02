@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>小汪汪 Skills</title>
+    <meta
+      name="description"
+      content="基于飞书多维表格驱动的技能目录网站，支持分类筛选、详情查看与自动同步。"
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Noto+Sans+SC:wght@400;500;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./assets/styles.css" />
+  </head>
+  <body>
+    <canvas class="aurora" aria-hidden="true"></canvas>
+    <div class="page-shell">
+      <header class="topbar" data-topbar>
+        <a class="brand" href="#hero">小汪汪</a>
+        <nav class="nav">
+          <a href="#works">作品</a>
+          <a href="#about">关于</a>
+          <a href="#contact">联系</a>
+        </nav>
+      </header>
+
+      <main>
+        <section class="hero section" id="hero">
+          <div class="hero-copy reveal">
+            <p class="eyebrow">Feishu Bitable Powered Portfolio</p>
+            <h1>小汪汪 Skills 导航站</h1>
+            <p class="hero-text">
+              数据直接来自飞书多维表格，前台自动渲染分类筛选、技能卡片与关键词检索线索。
+              当前站点已经接通飞书同步链路，适合做技能库、能力目录和内部工具导航。
+            </p>
+            <div class="hero-actions">
+              <a class="button button-primary" href="#works">查看技能</a>
+              <a class="button button-ghost" href="#contact">继续扩展</a>
+            </div>
+          </div>
+          <div class="hero-metrics reveal">
+            <article class="metric">
+              <span class="metric-value" data-count="0" data-counter="items">0</span>
+              <span class="metric-label">已接入技能</span>
+            </article>
+            <article class="metric">
+              <span class="metric-value" data-count="0" data-counter="categories">0</span>
+              <span class="metric-label">分类维度</span>
+            </article>
+            <article class="metric">
+              <span class="metric-value" data-counter="updated">--</span>
+              <span class="metric-label">最近刷新</span>
+            </article>
+          </div>
+        </section>
+
+        <section class="section section-band reveal" id="about">
+          <div class="section-heading">
+            <p class="eyebrow">About</p>
+            <h2>从飞书表格直接生成技能目录</h2>
+          </div>
+          <div class="about-grid">
+            <article class="panel">
+              <h3>目录展示</h3>
+              <p>飞书表格维护技能条目，网站负责分类浏览、关键词提示和详情阅读。</p>
+            </article>
+            <article class="panel">
+              <h3>刷新机制</h3>
+              <p>仓库内置 `refresh.py` 和 GitHub Actions，可周期性同步表格内容。</p>
+            </article>
+            <article class="panel">
+              <h3>视觉方向</h3>
+              <p>科技动态感主题，带滚动 reveal、悬停反馈、详情弹层和实时统计。</p>
+            </article>
+          </div>
+        </section>
+
+        <section class="section" id="works">
+          <div class="section-heading reveal">
+            <p class="eyebrow">Works</p>
+            <h2>技能目录</h2>
+          </div>
+          <div class="filters reveal" data-filters></div>
+          <div class="grid" data-grid>
+            <article class="empty-state">正在加载技能数据...</article>
+          </div>
+        </section>
+
+        <section class="section section-band reveal" id="contact">
+          <div class="contact-layout">
+            <div>
+              <p class="eyebrow">Contact</p>
+              <h2>后续可继续扩展</h2>
+            </div>
+            <div class="contact-card">
+              <p>可以继续补搜索、详情页、技能分组说明、外链跳转和文档联动。</p>
+              <p>当前数据源：飞书多维表格</p>
+              <p>部署方式：静态站 + 自动同步</p>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <dialog class="modal" data-modal>
+      <div class="modal-shell">
+        <button class="modal-close" type="button" data-close-modal aria-label="关闭">×</button>
+        <div class="modal-copy">
+          <p class="eyebrow" data-modal-category>技能详情</p>
+          <h3 data-modal-title>加载中</h3>
+          <p data-modal-meta></p>
+        </div>
+        <div class="modal-detail" data-modal-detail></div>
+      </div>
+    </dialog>
+
+    <template id="work-card-template">
+      <article class="card">
+        <button class="card-media" type="button">
+          <img alt="" loading="lazy" />
+          <span class="play-badge">详情</span>
+        </button>
+        <div class="card-body">
+          <div class="card-topline">
+            <p class="card-category"></p>
+            <p class="card-duration"></p>
+          </div>
+          <h3 class="card-title"></h3>
+          <p class="card-tools"></p>
+        </div>
+      </article>
+    </template>
+
+    <script type="module" src="./assets/app.js"></script>
+  </body>
+</html>
