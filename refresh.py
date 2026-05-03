@@ -27,6 +27,7 @@ API_DIR = REPO_DIR / "api"
 VIDEOS_FILE = API_DIR / "videos.json"
 COVERS_FILE = API_DIR / "covers.json"
 PORTFOLIO_FILE = API_DIR / "portfolio.json"
+PORTFOLIO_SCRIPT_FILE = API_DIR / "portfolio.js"
 
 APP_ID = os.environ.get("LARK_APP_ID", "").strip()
 APP_SECRET = os.environ.get("LARK_APP_SECRET", "").strip()
@@ -298,6 +299,12 @@ def write_outputs(
     VIDEOS_FILE.write_text(json.dumps(videos_payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     COVERS_FILE.write_text(json.dumps(covers_payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     PORTFOLIO_FILE.write_text(json.dumps(portfolio_payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    PORTFOLIO_SCRIPT_FILE.write_text(
+        "window.__PORTFOLIO_DATA__ = "
+        + json.dumps(portfolio_payload, ensure_ascii=False)
+        + ";\n",
+        encoding="utf-8",
+    )
 
 
 def main() -> None:

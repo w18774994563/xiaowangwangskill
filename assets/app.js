@@ -476,7 +476,25 @@ function renderFilters() {
   });
 }
 
+function resolveEmbeddedPayload() {
+  const payload = window.__PORTFOLIO_DATA__;
+  if (!payload || !Array.isArray(payload.items)) {
+    return null;
+  }
+  return payload;
+}
+
 async function loadPortfolio() {
+  const embeddedPayload = resolveEmbeddedPayload();
+  if (embeddedPayload) {
+    portfolioItems = embeddedPayload.items || [];
+    buildStats(embeddedPayload);
+    renderFilters();
+    renderCharts();
+    renderGrid();
+    return;
+  }
+
   const response = await fetch("./api/portfolio.json", { cache: "no-store" });
   const payload = await response.json();
   portfolioItems = payload.items || [];
@@ -511,8 +529,25 @@ function setupCopy() {
   });
 }
 
+function setupInPageNavigation() {
+  document.querySelectorAll("a[href^='#']").forEach((link) => {
+    link.addEventListener("click", (event) => {
+      const targetId = link.getAttribute("href");
+      if (!targetId || targetId === "#") return;
+      const target = document.querySelector(targetId);
+      if (!target) return;
+      event.preventDefault();
+      target.scrollIntoView({ behavior: "smooth", block: "start" });
+      if (window.location.protocol !== "file:") {
+        history.replaceState(null, "", targetId);
+      }
+    });
+  });
+}
+
 setupSearch();
 setupCopy();
+setupInPageNavigation();
 loadPortfolio().catch((error) => {
   grid.innerHTML = `<article class="skill-empty">数据加载失败：${error.message}</article>`;
 });
