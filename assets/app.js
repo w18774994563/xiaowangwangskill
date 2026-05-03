@@ -1,35 +1,40 @@
-const grid = document.querySelector("[data-grid]");
-const filters = document.querySelector("[data-filters]");
+const pageViews = [...document.querySelectorAll("[data-page-view]")];
+const pageNavButtons = [...document.querySelectorAll("[data-page-target]")];
+const openPageButtons = [...document.querySelectorAll("[data-open-page]")];
+const pageTitle = document.querySelector("[data-page-title]");
+const pageSummary = document.querySelector("[data-page-summary]");
 const searchInput = document.querySelector("[data-search]");
-const clearSearchButton = document.querySelector("[data-clear-search]");
+const triggerSearchInput = document.querySelector("[data-trigger-search]");
+const filters = document.querySelector("[data-filters]");
 const totalCount = document.querySelector("[data-total-count]");
-const lastSync = document.querySelector("[data-last-sync]");
+const featuredGrid = document.querySelector("[data-featured-grid]");
+const grid = document.querySelector("[data-grid]");
+const triggerList = document.querySelector("[data-trigger-list]");
+const appGrid = document.querySelector("[data-app-grid]");
 const template = document.querySelector("#work-card-template");
+const syncButton = document.querySelector("[data-sync-button]");
+const favoritesToggle = document.querySelector("[data-favorites-toggle]");
+const sortToggle = document.querySelector("[data-sort-toggle]");
+const filterReset = document.querySelector("[data-filter-reset]");
+const statsToggle = document.querySelector("[data-stats-toggle]");
+const homeSearchButton = document.querySelector("[data-home-search]");
+const clearDetailButton = document.querySelector("[data-clear-detail]");
+const detailFavoriteButton = document.querySelector("[data-favorite-detail]");
 const copyTriggerButton = document.querySelector("[data-copy-trigger]");
 const legendList = document.querySelector("[data-legend-list]");
 const barChart = document.querySelector("[data-bar-chart]");
 const miniBars = document.querySelector("[data-mini-bars]");
 const heatmap = document.querySelector("[data-heatmap]");
 const signalList = document.querySelector("[data-signal-list]");
-const constellationLinks = document.querySelector("[data-links]");
-const constellationBubbles = document.querySelector("[data-bubbles]");
 const donutA = document.querySelector("[data-donut-a]");
 const donutB = document.querySelector("[data-donut-b]");
 const donutC = document.querySelector("[data-donut-c]");
-
-let portfolioItems = [];
-let activeCategory = "全部技能";
-let searchQuery = "";
-let activeTrigger = "";
-const donutCircumference = 364.4;
-const pastelPalette = [
-  { fill: "rgba(125, 233, 219, 0.84)", solid: "#7de9db", line: "rgba(125, 233, 219, 0.42)" },
-  { fill: "rgba(255, 194, 164, 0.84)", solid: "#ffc2a4", line: "rgba(255, 194, 164, 0.42)" },
-  { fill: "rgba(199, 177, 255, 0.84)", solid: "#c7b1ff", line: "rgba(199, 177, 255, 0.42)" },
-  { fill: "rgba(255, 180, 214, 0.84)", solid: "#ffb4d6", line: "rgba(255, 180, 214, 0.42)" },
-  { fill: "rgba(165, 221, 255, 0.84)", solid: "#a5ddff", line: "rgba(165, 221, 255, 0.42)" },
-  { fill: "rgba(255, 220, 154, 0.84)", solid: "#ffdc9a", line: "rgba(255, 220, 154, 0.42)" },
-];
+const graphSvg = document.querySelector("[data-links]");
+const graphCenterButton = document.querySelector("[data-graph-center]");
+const graphFitButton = document.querySelector("[data-graph-fit]");
+const graphReheatButton = document.querySelector("[data-graph-reheat]");
+const chartModeButtons = [...document.querySelectorAll("[data-chart-mode]")];
+const lastSync = document.querySelector("[data-last-sync]");
 
 const detailRefs = {
   symbol: document.querySelector("[data-detail-symbol]"),
@@ -43,6 +48,43 @@ const detailRefs = {
   footer: document.querySelector("[data-detail-footer]"),
 };
 
+const statsNotes = {
+  items: document.querySelector("[data-stats-note='items']"),
+  enabled: document.querySelector("[data-stats-note='enabled']"),
+  uses: document.querySelector("[data-stats-note='uses']"),
+  apps: document.querySelector("[data-stats-note='apps']"),
+};
+
+const pageMeta = {
+  home: ["首页", "快速浏览技能、分类和同步状态。"],
+  skills: ["技能库", "按分类、收藏和排序查看技能。"],
+  triggers: ["触发词库", "复制、搜索并管理技能触发词。"],
+  apps: ["应用管理", "按分类管理技能并直接跳转查看。"],
+  insight: ["数据看板", "动态关系图与统计洞察。"],
+  docs: ["使用文档", "查看使用流程与同步说明。"],
+};
+
+const palette = ["#7de9db", "#ffc2a4", "#c7b1ff", "#ffb4d6", "#a5ddff", "#ffdc9a", "#b8f1ff"];
+const donutCircumference = 364.4;
+
+let payloadCache = null;
+let portfolioItems = [];
+let activePage = "home";
+let activeCategory = "全部技能";
+let searchQuery = "";
+let triggerSearchQuery = "";
+let selectedItemId = "";
+let sortMode = "default";
+let statsMode = "week";
+let chartMode = "categories";
+const favorites = new Set(JSON.parse(localStorage.getItem("xww-favorites") || "[]"));
+let favoritesOnly = false;
+let graphState = null;
+
+function formatNumber(value) {
+  return new Intl.NumberFormat("zh-CN").format(value || 0);
+}
+
 function formatShortDate(value) {
   if (!value) return "--";
   const date = new Date(value);
@@ -50,55 +92,27 @@ function formatShortDate(value) {
   return `${date.getMonth() + 1}月${date.getDate()}日`;
 }
 
-function formatNumber(value) {
-  return new Intl.NumberFormat("zh-CN").format(value);
+function saveFavorites() {
+  localStorage.setItem("xww-favorites", JSON.stringify([...favorites]));
 }
 
-function buildStats(payload) {
-  const items = payload.items || [];
-  const categories = new Set();
-  items.forEach((item) => (item.categories || []).forEach((category) => categories.add(category)));
-
-  const enabled = Math.round(items.length * 0.58);
-  const uses = items.reduce((sum, item) => sum + Math.max(8, (item.tools || "").length), 0) * 3;
-  const detailUsers = Math.round(enabled * 1.84);
-
-  const stats = {
-    items: formatNumber(items.length),
-    enabled: formatNumber(enabled),
-    uses: formatNumber(uses),
-    apps: formatNumber(categories.size * 2),
-    detailUses: formatNumber(Math.max(126, Math.round(uses / Math.max(1, items.length)) * 42)),
-    detailUsers: formatNumber(detailUsers),
-    detailRating: "98%",
-  };
-
-  Object.entries(stats).forEach(([key, value]) => {
-    document.querySelectorAll(`[data-counter='${key}']`).forEach((node) => {
-      node.textContent = value;
-    });
-  });
-
-  totalCount.textContent = formatNumber(items.length);
-  lastSync.textContent = formatShortDate(payload._refreshed_at);
+function resolveEmbeddedPayload() {
+  const payload = window.__PORTFOLIO_DATA__;
+  return payload && Array.isArray(payload.items) ? payload : null;
 }
 
-function categoryCounts() {
-  const counts = new Map();
-  portfolioItems.forEach((item) => {
-    (item.categories || []).forEach((category) => {
-      counts.set(category, (counts.get(category) || 0) + 1);
-    });
-  });
-  return [...counts.entries()].sort((a, b) => b[1] - a[1]);
-}
-
-function setDonutSegment(node, percent, offsetPercent, colorIndex) {
-  const dash = donutCircumference * percent;
-  const offset = donutCircumference * (1 - offsetPercent);
-  node.style.strokeDasharray = `${dash} ${donutCircumference}`;
-  node.style.strokeDashoffset = `${offset}`;
-  node.dataset.colorIndex = colorIndex;
+async function fetchPayload(force = false) {
+  if (!force && payloadCache) return payloadCache;
+  const embeddedPayload = resolveEmbeddedPayload();
+  if (embeddedPayload && !force) {
+    payloadCache = embeddedPayload;
+    return embeddedPayload;
+  }
+  const response = await fetch(`./api/portfolio.json${force ? `?t=${Date.now()}` : ""}`, { cache: "no-store" });
+  const payload = await response.json();
+  payloadCache = payload;
+  window.__PORTFOLIO_DATA__ = payload;
+  return payload;
 }
 
 function tokenizeSignals(item) {
@@ -114,219 +128,340 @@ function tokenizeSignals(item) {
   return tokens;
 }
 
-function signalCounts() {
+function categoryCounts(items = portfolioItems) {
   const counts = new Map();
+  items.forEach((item) => {
+    (item.categories || []).forEach((category) => {
+      counts.set(category, (counts.get(category) || 0) + 1);
+    });
+  });
+  return [...counts.entries()].sort((a, b) => b[1] - a[1]);
+}
+
+function signalCounts(items = portfolioItems) {
+  const counts = new Map();
+  items.forEach((item) => {
+    tokenizeSignals(item).forEach((token) => counts.set(token, (counts.get(token) || 0) + 1));
+  });
+  return [...counts.entries()].sort((a, b) => b[1] - a[1]);
+}
+
+function skillSymbol(item) {
+  return item.title.replace(/[^A-Za-z0-9\u4e00-\u9fa5]/g, "").slice(0, 1) || "技";
+}
+
+function detailCategory(item) {
+  return (item.categories || [])[0] || "技能管理";
+}
+
+function setPage(pageId) {
+  activePage = pageId;
+  pageViews.forEach((view) => view.classList.toggle("is-active", view.dataset.pageView === pageId));
+  pageNavButtons.forEach((button) => button.classList.toggle("is-active", button.dataset.pageTarget === pageId));
+  pageTitle.textContent = pageMeta[pageId][0];
+  pageSummary.textContent = pageMeta[pageId][1];
+}
+
+function openSkillsWithCategory(category) {
+  activeCategory = category || "全部技能";
+  renderFilters();
+  renderGrid();
+  setPage("skills");
+}
+
+function setActiveDetail(item) {
+  selectedItemId = item.record_id;
+  detailRefs.symbol.textContent = skillSymbol(item);
+  detailRefs.title.textContent = item.title;
+  detailRefs.description.textContent = item.tools || "暂无功能说明";
+  detailRefs.trigger.textContent = item.trigger_words || "未填写";
+  detailRefs.app.textContent = detailCategory(item);
+  detailRefs.body.textContent = item.tools || "暂无功能说明";
+  detailRefs.dev.textContent = detailCategory(item).includes("官方") ? "飞书官方" : "技能精选整理";
+  detailRefs.scene.textContent = detailCategory(item);
+  detailRefs.footer.textContent = item.trigger_words || "复制触发词后可直接调用";
+  detailFavoriteButton.textContent = favorites.has(item.record_id) ? "★" : "☆";
+}
+
+function clearDetail() {
+  selectedItemId = "";
+  detailRefs.symbol.textContent = "文";
+  detailRefs.title.textContent = "未选择技能";
+  detailRefs.description.textContent = "从左侧技能列表中点击一个技能查看详情。";
+  detailRefs.trigger.textContent = "--";
+  detailRefs.app.textContent = "--";
+  detailRefs.body.textContent = "这里会展示技能功能说明、触发词和适用场景。";
+  detailRefs.dev.textContent = "--";
+  detailRefs.scene.textContent = "--";
+  detailRefs.footer.textContent = "复制触发词后可直接调用。";
+  detailFavoriteButton.textContent = "☆";
+}
+
+function buildStats(payload) {
+  const items = payload.items || [];
+  const categories = new Set();
+  items.forEach((item) => (item.categories || []).forEach((category) => categories.add(category)));
+  const enabled = Math.round(items.length * 0.58);
+  const uses = items.reduce((sum, item) => sum + Math.max(8, (item.tools || "").length), 0) * 3;
+  const detailUsers = Math.round(enabled * 1.84);
+
+  const baseStats = {
+    items: items.length,
+    enabled,
+    uses,
+    apps: categories.size * 2,
+    detailUses: Math.max(126, Math.round(uses / Math.max(1, items.length)) * 42),
+    detailUsers,
+    detailRating: "98%",
+  };
+
+  const viewStats =
+    statsMode === "week"
+      ? baseStats
+      : {
+          ...baseStats,
+          enabled: Math.round(baseStats.enabled * 2.3),
+          uses: Math.round(baseStats.uses * 2.9),
+          apps: baseStats.apps + 8,
+          detailUses: baseStats.detailUses * 2,
+          detailUsers: Math.round(baseStats.detailUsers * 1.7),
+        };
+
+  Object.entries(viewStats).forEach(([key, value]) => {
+    document.querySelectorAll(`[data-counter='${key}']`).forEach((node) => {
+      node.textContent = typeof value === "number" ? formatNumber(value) : value;
+    });
+  });
+
+  statsNotes.items.textContent = statsMode === "week" ? "较上周 ↑ 12" : "累计入库";
+  statsNotes.enabled.textContent = statsMode === "week" ? "较上周 ↑ 8" : "累计启用";
+  statsNotes.uses.textContent = statsMode === "week" ? "较上周 ↑ 18%" : "累计调用";
+  statsNotes.apps.textContent = statsMode === "week" ? "较上周 ↑ 2" : "累计覆盖";
+
+  totalCount.textContent = formatNumber(items.length);
+  lastSync.textContent = formatShortDate(payload._refreshed_at);
+  statsToggle.textContent = statsMode === "week" ? "本周" : "累计";
+}
+
+function getFilteredItems() {
+  let items = [...portfolioItems];
+  if (activeCategory !== "全部技能") {
+    items = items.filter((item) => (item.categories || []).includes(activeCategory));
+  }
+  if (searchQuery) {
+    const query = searchQuery.toLowerCase();
+    items = items.filter((item) =>
+      [item.title, item.tools, item.trigger_words, ...(item.categories || [])]
+        .join(" ")
+        .toLowerCase()
+        .includes(query)
+    );
+  }
+  if (favoritesOnly) {
+    items = items.filter((item) => favorites.has(item.record_id));
+  }
+  if (sortMode === "title") {
+    items.sort((a, b) => a.title.localeCompare(b.title, "zh-CN"));
+  } else if (sortMode === "hot") {
+    items.sort((a, b) => (b.tools || "").length - (a.tools || "").length);
+  } else {
+    items.sort((a, b) => Number(a.order || 0) - Number(b.order || 0));
+  }
+  return items;
+}
+
+function toggleFavorite(recordId) {
+  if (favorites.has(recordId)) favorites.delete(recordId);
+  else favorites.add(recordId);
+  saveFavorites();
+  renderAll();
+}
+
+async function copyText(text) {
+  if (!text) return;
+  await navigator.clipboard.writeText(text);
+}
+
+function buildSkillRow(item) {
+  const fragment = template.content.cloneNode(true);
+  const rowButton = fragment.querySelector(".skill-row-button");
+  const icon = fragment.querySelector(".skill-icon");
+  const copyButton = fragment.querySelector("[data-row-copy]");
+  const favoriteButton = fragment.querySelector("[data-row-favorite]");
+
+  icon.textContent = skillSymbol(item);
+  fragment.querySelector(".skill-title").textContent = item.title;
+  fragment.querySelector(".skill-desc").textContent = item.tools || "暂无说明";
+  fragment.querySelector(".skill-trigger").textContent = `触发词：${item.trigger_words || "未填写"}`;
+  fragment.querySelector(".skill-app").textContent = `应用：${detailCategory(item)}`;
+  fragment.querySelector(".skill-badge").textContent = detailCategory(item).includes("官方") ? "官方" : "精选";
+  favoriteButton.textContent = favorites.has(item.record_id) ? "已收藏" : "收藏";
+
+  rowButton.addEventListener("click", () => {
+    setActiveDetail(item);
+    setPage("skills");
+  });
+  copyButton.addEventListener("click", (event) => {
+    event.stopPropagation();
+    copyText(item.trigger_words || item.title);
+    copyButton.textContent = "已复制";
+    setTimeout(() => {
+      copyButton.textContent = "复制";
+    }, 1000);
+  });
+  favoriteButton.addEventListener("click", (event) => {
+    event.stopPropagation();
+    toggleFavorite(item.record_id);
+  });
+  return fragment;
+}
+
+function renderFeatured() {
+  featuredGrid.innerHTML = "";
+  getFilteredItems()
+    .slice(0, 4)
+    .forEach((item) => {
+      const button = document.createElement("button");
+      button.className = "feature-card";
+      button.type = "button";
+      button.innerHTML = `
+        <strong>${item.title}</strong>
+        <span>${detailCategory(item)}</span>
+        <small>${item.trigger_words || "无触发词"}</small>
+      `;
+      button.addEventListener("click", () => {
+        setActiveDetail(item);
+        setPage("skills");
+      });
+      featuredGrid.appendChild(button);
+    });
+}
+
+function renderFilters() {
+  const counts = new Map([["全部技能", portfolioItems.length]]);
   portfolioItems.forEach((item) => {
-    tokenizeSignals(item).forEach((token) => {
-      counts.set(token, (counts.get(token) || 0) + 1);
-    });
+    (item.categories || []).forEach((category) => counts.set(category, (counts.get(category) || 0) + 1));
   });
-  return [...counts.entries()]
-    .sort((a, b) => b[1] - a[1])
-    .filter(([token]) => token !== "#全部技能");
+
+  filters.innerHTML = "";
+  [...counts.entries()]
+    .sort((a, b) => {
+      if (a[0] === "全部技能") return -1;
+      if (b[0] === "全部技能") return 1;
+      return b[1] - a[1];
+    })
+    .slice(0, 6)
+    .forEach(([category, count]) => {
+      const button = document.createElement("button");
+      button.className = `filter-chip${category === activeCategory ? " is-active" : ""}`;
+      button.type = "button";
+      button.textContent = `${category} ${count}`;
+      button.addEventListener("click", () => {
+        activeCategory = category;
+        renderAll();
+      });
+      filters.appendChild(button);
+    });
 }
 
-function appendBubble(nodeData) {
-  const node = document.createElement("div");
-  node.className = `constellation-bubble ${nodeData.kind === "core" ? "is-core" : "is-leaf"}`;
-  node.style.left = `${nodeData.x}%`;
-  node.style.top = `${nodeData.y}%`;
-  node.style.width = `${nodeData.size}px`;
-  node.style.height = `${nodeData.size}px`;
-  node.style.transform = "translate(-50%, -50%)";
-  node.style.background = nodeData.color.fill;
-
-  const inner = document.createElement("div");
-  inner.className = "bubble-inner";
-
-  const label = document.createElement("strong");
-  label.className = "bubble-label";
-  label.textContent = nodeData.label;
-
-  const value = document.createElement("span");
-  value.className = "bubble-value";
-  value.textContent = formatNumber(nodeData.value);
-
-  inner.append(label, value);
-  node.appendChild(inner);
-  constellationBubbles.appendChild(node);
+function renderGrid() {
+  const items = getFilteredItems();
+  grid.innerHTML = "";
+  if (!items.length) {
+    grid.innerHTML = `<article class="skill-empty">没有匹配结果，换个分类或搜索词试试。</article>`;
+    return;
+  }
+  items.forEach((item) => grid.appendChild(buildSkillRow(item)));
+  if (!selectedItemId) {
+    setActiveDetail(items[0]);
+  }
 }
 
-function renderConstellation(topCategories) {
-  const corePositions = [
-    { x: 18, y: 22 },
-    { x: 50, y: 18 },
-    { x: 80, y: 24 },
-    { x: 34, y: 72 },
-    { x: 68, y: 68 },
-  ];
-  const leafPositions = [
-    { x: 7, y: 14 },
-    { x: 10, y: 56 },
-    { x: 22, y: 55 },
-    { x: 30, y: 41 },
-    { x: 48, y: 44 },
-    { x: 57, y: 83 },
-    { x: 77, y: 48 },
-    { x: 88, y: 56 },
-    { x: 92, y: 14 },
-    { x: 89, y: 83 },
-  ];
+function renderTriggerList() {
+  const items = getFilteredItems().filter((item) => item.trigger_words);
+  const query = triggerSearchQuery.trim().toLowerCase();
+  const filtered = !query
+    ? items
+    : items.filter((item) => `${item.title} ${item.trigger_words}`.toLowerCase().includes(query));
 
-  const coreNodes = topCategories.slice(0, 5).map(([name, count], index) => ({
-    id: `core-${index}`,
-    label: name,
-    value: count,
-    kind: "core",
-    color: pastelPalette[index % pastelPalette.length],
-    size: 74 + Math.min(68, count * 2.8),
-    ...corePositions[index],
-  }));
-
-  const leafNodes = [];
-  coreNodes.forEach((core, index) => {
-    const match = portfolioItems.find((item) => (item.categories || []).includes(core.label));
-    if (!match) return;
-    leafNodes.push({
-      id: `leaf-${index}`,
-      label: match.title,
-      value: (match.trigger_words || "").length || match.title.length,
-      kind: "leaf",
-      color: pastelPalette[(index + 2) % pastelPalette.length],
-      size: 46 + ((match.title.length + index * 7) % 20),
-      coreId: core.id,
-      ...leafPositions[leafNodes.length],
-    });
-  });
-
-  const extraLeaves = portfolioItems
-    .filter((item) => !leafNodes.some((node) => node.label === item.title))
-    .slice(0, Math.max(0, 10 - leafNodes.length))
-    .map((item, index) => {
-      const pivot = coreNodes[index % Math.max(1, coreNodes.length)];
-      return {
-        id: `leaf-extra-${index}`,
-        label: item.title,
-        value: (item.tools || "").length,
-        kind: "leaf",
-        color: pastelPalette[(index + 3) % pastelPalette.length],
-        size: 38 + ((item.title.length + index * 3) % 18),
-        coreId: pivot?.id,
-        ...leafPositions[leafNodes.length + index],
-      };
-    });
-
-  const allLeaves = [...leafNodes, ...extraLeaves].slice(0, leafPositions.length);
-  const nodeMap = new Map([...coreNodes, ...allLeaves].map((node) => [node.id, node]));
-
-  constellationLinks.innerHTML = "";
-  constellationBubbles.innerHTML = "";
-
-  coreNodes.forEach((node, index) => {
-    const next = coreNodes[(index + 1) % coreNodes.length];
-    if (!next) return;
-    const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
-    path.setAttribute(
-      "d",
-      `M ${node.x * 10} ${node.y * 5.2} C ${(node.x + next.x) * 5} ${Math.min(node.y, next.y) * 4.5}, ${(
-        node.x + next.x
-      ) * 5} ${Math.max(node.y, next.y) * 5.6}, ${next.x * 10} ${next.y * 5.2}`
-    );
-    path.setAttribute("class", "constellation-link");
-    path.setAttribute("stroke", node.color.line);
-    constellationLinks.appendChild(path);
-  });
-
-  allLeaves.forEach((leaf) => {
-    const core = nodeMap.get(leaf.coreId);
-    if (!core) return;
-    const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
-    path.setAttribute(
-      "d",
-      `M ${leaf.x * 10} ${leaf.y * 5.2} Q ${(leaf.x + core.x) * 5} ${((leaf.y + core.y) / 2) * 5.2 - 24}, ${
-        core.x * 10
-      } ${core.y * 5.2}`
-    );
-    path.setAttribute("class", "constellation-link");
-    path.setAttribute("stroke", leaf.color.line);
-    constellationLinks.appendChild(path);
-  });
-
-  [...coreNodes, ...allLeaves].forEach(appendBubble);
-}
-
-function renderSignalList() {
-  const signals = signalCounts().slice(0, 5);
-  const max = signals[0]?.[1] || 1;
-  signalList.innerHTML = "";
-
-  signals.forEach(([label, count], index) => {
+  triggerList.innerHTML = "";
+  filtered.forEach((item) => {
     const row = document.createElement("div");
-    row.className = "signal-row";
-
-    const fill = document.createElement("div");
-    fill.className = "signal-fill";
-    fill.style.width = `${38 + (count / max) * 62}%`;
-    fill.style.background = `linear-gradient(90deg, ${pastelPalette[index % pastelPalette.length].fill}, rgba(255,255,255,0.08))`;
-
-    const copy = document.createElement("div");
-    copy.className = "signal-copy";
-
-    const meta = document.createElement("div");
-    const strong = document.createElement("strong");
-    strong.textContent = label;
-    const small = document.createElement("small");
-    small.textContent = `出现 ${formatNumber(count)} 次`;
-    meta.append(strong, small);
-
-    const score = document.createElement("div");
-    score.className = "signal-score";
-    score.textContent = formatNumber(count);
-
-    copy.append(meta, score);
-    row.append(fill, copy);
-    signalList.appendChild(row);
+    row.className = "trigger-card";
+    row.innerHTML = `
+      <div class="trigger-copy">
+        <strong>${item.trigger_words}</strong>
+        <span>${item.title}</span>
+      </div>
+      <div class="trigger-actions">
+        <button class="ghost-select" type="button">复制</button>
+        <button class="ghost-select" type="button">查看技能</button>
+      </div>
+    `;
+    row.querySelectorAll("button")[0].addEventListener("click", () => copyText(item.trigger_words));
+    row.querySelectorAll("button")[1].addEventListener("click", () => {
+      setActiveDetail(item);
+      setPage("skills");
+    });
+    triggerList.appendChild(row);
   });
 }
 
-function renderCharts() {
+function renderAppGrid() {
+  const counts = categoryCounts();
+  appGrid.innerHTML = "";
+  counts.forEach(([category, count], index) => {
+    const card = document.createElement("button");
+    card.className = "app-card";
+    card.type = "button";
+    const sample = portfolioItems.find((item) => (item.categories || []).includes(category));
+    card.innerHTML = `
+      <span class="app-card-swatch" style="background:${palette[index % palette.length]}"></span>
+      <strong>${category}</strong>
+      <small>${formatNumber(count)} 个技能</small>
+      <span>${sample ? sample.title : "点击查看具体条目"}</span>
+    `;
+    card.addEventListener("click", () => openSkillsWithCategory(category));
+    appGrid.appendChild(card);
+  });
+}
+
+function setDonutSegment(node, percent, offsetPercent) {
+  const dash = donutCircumference * percent;
+  const offset = donutCircumference * (1 - offsetPercent);
+  node.style.strokeDasharray = `${dash} ${donutCircumference}`;
+  node.style.strokeDashoffset = `${offset}`;
+}
+
+function renderAnalyticsCharts() {
   const topCategories = categoryCounts();
-  const total = portfolioItems.length || 1;
   const topThree = topCategories.slice(0, 3);
+  const total = portfolioItems.length || 1;
 
   const a = (topThree[0]?.[1] || 0) / total;
   const b = (topThree[1]?.[1] || 0) / total;
   const c = (topThree[2]?.[1] || 0) / total;
 
-  setDonutSegment(donutA, a, 0, 0);
-  setDonutSegment(donutB, b, a, 1);
-  setDonutSegment(donutC, c, a + b, 2);
+  setDonutSegment(donutA, a, 0);
+  setDonutSegment(donutB, b, a);
+  setDonutSegment(donutC, c, a + b);
 
   legendList.innerHTML = "";
   topThree.forEach(([name, count], index) => {
     const item = document.createElement("div");
     item.className = "legend-item";
-    const color = ["#ff9d44", "#7adfd0", "#76d6f7"][index];
-    item.innerHTML = `
-      <strong><span class="legend-dot" style="background:${color}"></span>${name}</strong>
-      <small>${formatNumber(count)} 个技能</small>
-    `;
+    item.innerHTML = `<strong><span class="legend-dot" style="background:${palette[index]}"></span>${name}</strong><small>${formatNumber(count)} 个技能</small>`;
     legendList.appendChild(item);
   });
 
   barChart.innerHTML = "";
   const maxCategory = topCategories[0]?.[1] || 1;
-  topCategories.slice(0, 6).forEach(([name, count]) => {
+  topCategories.slice(0, 6).forEach(([name, count], index) => {
     const row = document.createElement("div");
     row.className = "bar-row";
     row.innerHTML = `
-      <div class="bar-label">
-        <span>${name}</span>
-        <strong>${count}</strong>
-      </div>
-      <div class="bar-track">
-        <div class="bar-fill" style="width:${(count / maxCategory) * 100}%"></div>
-      </div>
+      <div class="bar-label"><span>${name}</span><strong>${count}</strong></div>
+      <div class="bar-track"><div class="bar-fill" style="width:${(count / maxCategory) * 100}%;background:linear-gradient(90deg, ${palette[index]}, #ff8b2b)"></div></div>
     `;
     barChart.appendChild(row);
   });
@@ -346,14 +481,13 @@ function renderCharts() {
     else if (len <= 16) buckets[3][1] += 1;
     else buckets[4][1] += 1;
   });
-
   const maxBucket = Math.max(...buckets.map(([, value]) => value), 1);
   miniBars.innerHTML = "";
-  buckets.forEach(([label, value]) => {
+  buckets.forEach(([label, value], index) => {
     const col = document.createElement("div");
     col.className = "mini-bar-col";
     col.innerHTML = `
-      <div class="mini-bar-stick" style="height:${Math.max(24, (value / maxBucket) * 120)}px"></div>
+      <div class="mini-bar-stick" style="height:${Math.max(24, (value / maxBucket) * 120)}px;background:linear-gradient(180deg, ${palette[index]}, #c7b8ff)"></div>
       <strong>${value}</strong>
       <span>${label}</span>
     `;
@@ -362,192 +496,340 @@ function renderCharts() {
 
   heatmap.innerHTML = "";
   portfolioItems.slice(0, 24).forEach((item, index) => {
-    const value = Math.min(0.92, 0.18 + ((item.title.length + index) % 9) * 0.08);
     const cell = document.createElement("div");
     cell.className = "heatmap-cell";
-    cell.style.background = `rgba(255, 139, 43, ${Math.min(0.5, value)})`;
-    if (index % 3 === 1) cell.style.background = `rgba(122, 223, 208, ${Math.min(0.55, value)})`;
-    if (index % 3 === 2) cell.style.background = `rgba(118, 214, 247, ${Math.min(0.55, value)})`;
+    cell.style.background = `${palette[index % palette.length]}44`;
     heatmap.appendChild(cell);
   });
 
-  renderConstellation(topCategories);
-  renderSignalList();
-}
-
-function skillSymbol(item) {
-  return item.title.replace(/[^A-Za-z0-9\u4e00-\u9fa5]/g, "").slice(0, 1) || "技";
-}
-
-function detailCategory(item) {
-  return (item.categories || [])[0] || "技能管理";
-}
-
-function filteredItems() {
-  return portfolioItems.filter((item) => {
-    const inCategory =
-      activeCategory === "全部技能" || (item.categories || []).includes(activeCategory);
-    const corpus = [item.title, item.tools, item.trigger_words, ...(item.categories || [])]
-      .join(" ")
-      .toLowerCase();
-    const inQuery = !searchQuery || corpus.includes(searchQuery.toLowerCase());
-    return inCategory && inQuery;
+  const signals = signalCounts().slice(0, 5);
+  const maxSignal = signals[0]?.[1] || 1;
+  signalList.innerHTML = "";
+  signals.forEach(([label, count], index) => {
+    const row = document.createElement("div");
+    row.className = "signal-row";
+    row.innerHTML = `
+      <div class="signal-fill" style="width:${34 + (count / maxSignal) * 62}%;background:linear-gradient(90deg, ${palette[index]}, rgba(255,255,255,0.08))"></div>
+      <div class="signal-copy">
+        <div><strong>${label}</strong><small>出现 ${formatNumber(count)} 次</small></div>
+        <div class="signal-score">${formatNumber(count)}</div>
+      </div>
+    `;
+    signalList.appendChild(row);
   });
 }
 
-function setActiveDetail(item) {
-  activeTrigger = item.trigger_words || "";
-  detailRefs.symbol.textContent = skillSymbol(item);
-  detailRefs.title.textContent = item.title;
-  detailRefs.description.textContent = item.tools || "暂无功能说明";
-  detailRefs.trigger.textContent = item.trigger_words || "未填写";
-  detailRefs.app.textContent = detailCategory(item);
-  detailRefs.body.textContent = item.tools || "暂无功能说明";
-  detailRefs.dev.textContent = detailCategory(item).includes("官方") ? "飞书官方" : "小汪汪整理";
-  detailRefs.scene.textContent = detailCategory(item);
-  detailRefs.footer.textContent = item.trigger_words || "复制触发词后可直接调用";
-}
-
-function buildRow(item, index) {
-  const fragment = template.content.cloneNode(true);
-  const button = fragment.querySelector(".skill-row-button");
-  const icon = fragment.querySelector(".skill-icon");
-
-  icon.textContent = skillSymbol(item);
-  fragment.querySelector(".skill-title").textContent = item.title;
-  fragment.querySelector(".skill-desc").textContent = item.tools || "暂无说明";
-  fragment.querySelector(".skill-trigger").textContent = `触发词：${item.trigger_words || "未填写"}`;
-  fragment.querySelector(".skill-app").textContent = `应用：${detailCategory(item)}`;
-
-  if ((item.categories || [])[0]) {
-    fragment.querySelector(".skill-badge").textContent = detailCategory(item).includes("官方")
-      ? "官方"
-      : "精选";
-  }
-
-  button.addEventListener("click", () => setActiveDetail(item));
-  if (index === 0) {
-    setActiveDetail(item);
-  }
-  return fragment;
-}
-
-function renderGrid() {
-  const items = filteredItems();
-  grid.innerHTML = "";
-
-  if (!items.length) {
-    const empty = document.createElement("article");
-    empty.className = "skill-empty";
-    empty.textContent = "没有匹配结果，换个分类或搜索词试试。";
-    grid.appendChild(empty);
-    return;
-  }
-
-  items.slice(0, 8).forEach((item, index) => grid.appendChild(buildRow(item, index)));
-}
-
-function renderFilters() {
-  const counts = new Map([["全部技能", portfolioItems.length]]);
-  portfolioItems.forEach((item) => {
-    (item.categories || []).forEach((category) => {
-      counts.set(category, (counts.get(category) || 0) + 1);
+function buildGraphData(mode) {
+  if (mode === "triggers") {
+    const tokens = signalCounts().slice(0, 10);
+    const tokenNodes = tokens.map(([token, count], index) => ({
+      id: `token:${token}`,
+      label: token,
+      value: count,
+      kind: "token",
+      color: palette[index % palette.length],
+    }));
+    const skillNodes = getFilteredItems().slice(0, 18).map((item, index) => ({
+      id: item.record_id,
+      label: item.title,
+      value: Math.max(1, (item.trigger_words || "").length),
+      kind: "skill",
+      color: palette[(index + 2) % palette.length],
+      item,
+    }));
+    const links = [];
+    skillNodes.forEach((node) => {
+      tokenizeSignals(node.item).forEach((token) => {
+        if (tokens.some(([name]) => `#${name.replace(/^#/, "")}` === token || name === token)) {
+          links.push({ source: node.id, target: `token:${token}`, weight: 1 });
+        }
+      });
     });
-  });
-
-  const ordered = [...counts.entries()].sort((a, b) => {
-    if (a[0] === "全部技能") return -1;
-    if (b[0] === "全部技能") return 1;
-    return b[1] - a[1];
-  });
-
-  filters.innerHTML = "";
-  ordered.slice(0, 6).forEach(([category, count]) => {
-    const button = document.createElement("button");
-    button.className = `filter-chip${category === activeCategory ? " is-active" : ""}`;
-    button.type = "button";
-    button.textContent = `${category} ${count}`;
-    button.addEventListener("click", () => {
-      activeCategory = category;
-      renderFilters();
-      renderGrid();
-    });
-    filters.appendChild(button);
-  });
-}
-
-function resolveEmbeddedPayload() {
-  const payload = window.__PORTFOLIO_DATA__;
-  if (!payload || !Array.isArray(payload.items)) {
-    return null;
-  }
-  return payload;
-}
-
-async function loadPortfolio() {
-  const embeddedPayload = resolveEmbeddedPayload();
-  if (embeddedPayload) {
-    portfolioItems = embeddedPayload.items || [];
-    buildStats(embeddedPayload);
-    renderFilters();
-    renderCharts();
-    renderGrid();
-    return;
+    return { nodes: [...tokenNodes, ...skillNodes], links };
   }
 
-  const response = await fetch("./api/portfolio.json", { cache: "no-store" });
-  const payload = await response.json();
-  portfolioItems = payload.items || [];
-  buildStats(payload);
-  renderFilters();
-  renderCharts();
-  renderGrid();
-}
-
-function setupSearch() {
-  searchInput.addEventListener("input", (event) => {
-    searchQuery = event.target.value.trim();
-    renderGrid();
-  });
-
-  clearSearchButton.addEventListener("click", () => {
-    searchQuery = "";
-    searchInput.value = "";
-    renderGrid();
-    searchInput.focus();
-  });
-}
-
-function setupCopy() {
-  copyTriggerButton.addEventListener("click", async () => {
-    if (!activeTrigger) return;
-    await navigator.clipboard.writeText(activeTrigger);
-    copyTriggerButton.textContent = "已复制";
-    setTimeout(() => {
-      copyTriggerButton.textContent = "复制触发词";
-    }, 1200);
-  });
-}
-
-function setupInPageNavigation() {
-  document.querySelectorAll("a[href^='#']").forEach((link) => {
-    link.addEventListener("click", (event) => {
-      const targetId = link.getAttribute("href");
-      if (!targetId || targetId === "#") return;
-      const target = document.querySelector(targetId);
-      if (!target) return;
-      event.preventDefault();
-      target.scrollIntoView({ behavior: "smooth", block: "start" });
-      if (window.location.protocol !== "file:") {
-        history.replaceState(null, "", targetId);
+  const categories = categoryCounts().slice(0, 10);
+  const categoryNodes = categories.map(([name, count], index) => ({
+    id: `category:${name}`,
+    label: name,
+    value: count,
+    kind: "category",
+    color: palette[index % palette.length],
+  }));
+  const skillNodes = getFilteredItems().slice(0, 18).map((item, index) => ({
+    id: item.record_id,
+    label: item.title,
+    value: Math.max(1, (item.tools || "").length),
+    kind: "skill",
+    color: palette[(index + 2) % palette.length],
+    item,
+  }));
+  const links = [];
+  skillNodes.forEach((node) => {
+    (node.item.categories || []).forEach((category) => {
+      if (categories.some(([name]) => name === category)) {
+        links.push({ source: node.id, target: `category:${category}`, weight: 1 });
       }
     });
   });
+  return { nodes: [...categoryNodes, ...skillNodes], links };
 }
 
-setupSearch();
-setupCopy();
-setupInPageNavigation();
+function runGraphAction(action) {
+  if (!graphState) return;
+  if (action === "reheat") {
+    graphState.simulation.alpha(1).restart();
+  } else if (action === "center") {
+    graphState.svg
+      .transition()
+      .duration(250)
+      .call(graphState.zoom.transform, window.d3.zoomIdentity);
+  } else if (action === "fit") {
+    const bounds = graphState.root.node().getBBox();
+    if (!Number.isFinite(bounds.x + bounds.y + bounds.width + bounds.height) || !bounds.width || !bounds.height) {
+      return;
+    }
+    const width = graphState.width;
+    const height = graphState.height;
+    const scale = Math.min(width / Math.max(1, bounds.width) * 0.86, height / Math.max(1, bounds.height) * 0.86, 1.2);
+    const tx = width / 2 - (bounds.x + bounds.width / 2) * scale;
+    const ty = height / 2 - (bounds.y + bounds.height / 2) * scale;
+    graphState.svg
+      .transition()
+      .duration(250)
+      .call(graphState.zoom.transform, window.d3.zoomIdentity.translate(tx, ty).scale(scale));
+  }
+}
+
+function renderDynamicGraph() {
+  if (!window.d3 || !graphSvg) return;
+  const d3 = window.d3;
+  const stage = graphSvg.closest(".constellation-stage");
+  const width = stage.clientWidth;
+  const height = stage.clientHeight;
+  const data = buildGraphData(chartMode);
+  const svg = d3.select(graphSvg);
+  svg.selectAll("*").remove();
+  svg.attr("viewBox", `0 0 ${width} ${height}`);
+
+  const root = svg.append("g");
+  const link = root
+    .append("g")
+    .attr("stroke-opacity", 0.28)
+    .selectAll("line")
+    .data(data.links)
+    .join("line")
+    .attr("stroke", "#d9d9d9")
+    .attr("stroke-width", 1.3);
+
+  const node = root
+    .append("g")
+    .selectAll("g")
+    .data(data.nodes)
+    .join("g")
+    .attr("class", "graph-node");
+
+  node
+    .append("circle")
+    .attr("r", (d) => (d.kind === "skill" ? 18 + Math.min(28, d.value / 3) : 24 + Math.min(36, d.value / 2.5)))
+    .attr("fill", (d) => d.color)
+    .attr("fill-opacity", 0.78)
+    .attr("stroke", "rgba(255,255,255,0.9)")
+    .attr("stroke-width", 2);
+
+  node
+    .append("text")
+    .attr("text-anchor", "middle")
+    .attr("y", (d) => (d.kind === "skill" ? 34 : 48))
+    .attr("font-size", (d) => (d.kind === "skill" ? 12 : 14))
+    .attr("font-weight", "700")
+    .attr("fill", "#2f3135")
+    .selectAll("tspan")
+    .data((d) => {
+      const label = d.label.length > 12 ? `${d.label.slice(0, 11)}…` : d.label;
+      return [label, formatNumber(d.value)];
+    })
+    .join("tspan")
+    .attr("x", 0)
+    .attr("dy", (_, index) => (index === 0 ? 0 : 18))
+    .attr("fill-opacity", (_, index) => (index === 0 ? 1 : 0.55))
+    .text((d) => d);
+
+  node
+    .style("cursor", "pointer")
+    .on("click", (_, d) => {
+      if (d.kind === "skill" && d.item) {
+        setActiveDetail(d.item);
+        setPage("skills");
+      } else if (d.kind === "category") {
+        openSkillsWithCategory(d.label);
+      } else if (d.kind === "token") {
+        triggerSearchQuery = d.label.replace(/^#/, "");
+        if (triggerSearchInput) triggerSearchInput.value = triggerSearchQuery;
+        renderTriggerList();
+        setPage("triggers");
+      }
+    });
+
+  const simulation = d3
+    .forceSimulation(data.nodes)
+    .force("link", d3.forceLink(data.links).id((d) => d.id).distance((d) => (chartMode === "categories" ? 120 : 140)))
+    .force("charge", d3.forceManyBody().strength((d) => (d.kind === "skill" ? -120 : -220)))
+    .force("collide", d3.forceCollide().radius((d) => (d.kind === "skill" ? 42 : 64)))
+    .force("center", d3.forceCenter(width / 2, height / 2))
+    .force("x", d3.forceX(width / 2).strength(0.04))
+    .force("y", d3.forceY(height / 2).strength(0.04));
+
+  const drag = d3
+    .drag()
+    .on("start", (event) => {
+      if (!event.active) simulation.alphaTarget(0.24).restart();
+      event.subject.fx = event.subject.x;
+      event.subject.fy = event.subject.y;
+    })
+    .on("drag", (event) => {
+      event.subject.fx = event.x;
+      event.subject.fy = event.y;
+    })
+    .on("end", (event) => {
+      if (!event.active) simulation.alphaTarget(0);
+      event.subject.fx = null;
+      event.subject.fy = null;
+    });
+
+  node.call(drag);
+
+  simulation.on("tick", () => {
+    link
+      .attr("x1", (d) => d.source.x)
+      .attr("y1", (d) => d.source.y)
+      .attr("x2", (d) => d.target.x)
+      .attr("y2", (d) => d.target.y)
+      .attr("stroke", (d) => (d.source.color || d.target.color));
+
+    node.attr("transform", (d) => `translate(${d.x},${d.y})`);
+  });
+
+  const zoom = d3.zoom().scaleExtent([0.55, 2.4]).on("zoom", (event) => root.attr("transform", event.transform));
+  svg.call(zoom);
+
+  graphState = { simulation, svg, root, zoom, width, height };
+  setTimeout(() => runGraphAction("fit"), 320);
+}
+
+function renderAll() {
+  if (!portfolioItems.length) return;
+  renderFilters();
+  renderFeatured();
+  renderGrid();
+  renderTriggerList();
+  renderAppGrid();
+  renderAnalyticsCharts();
+  renderDynamicGraph();
+  if (!selectedItemId) {
+    const first = getFilteredItems()[0];
+    if (first) setActiveDetail(first);
+  }
+  favoritesToggle.textContent = favoritesOnly ? "显示全部" : "只看收藏";
+  sortToggle.textContent =
+    sortMode === "title" ? "排序：名称" : sortMode === "hot" ? "排序：热度" : "排序：默认";
+}
+
+function cycleSortMode() {
+  sortMode = sortMode === "default" ? "title" : sortMode === "title" ? "hot" : "default";
+  renderAll();
+}
+
+async function loadPortfolio(force = false) {
+  const payload = await fetchPayload(force);
+  portfolioItems = payload.items || [];
+  buildStats(payload);
+  renderAll();
+}
+
+function setupEvents() {
+  pageNavButtons.forEach((button) =>
+    button.addEventListener("click", () => {
+      setPage(button.dataset.pageTarget);
+      if (button.dataset.pageTarget === "insight") {
+        setTimeout(renderDynamicGraph, 50);
+      }
+    })
+  );
+
+  openPageButtons.forEach((button) =>
+    button.addEventListener("click", () => {
+      setPage(button.dataset.openPage);
+      if (button.dataset.openPage === "skills" && searchQuery) {
+        renderGrid();
+      }
+      if (button.dataset.openPage === "insight") {
+        setTimeout(renderDynamicGraph, 50);
+      }
+    })
+  );
+
+  searchInput.addEventListener("input", (event) => {
+    searchQuery = event.target.value.trim();
+    renderAll();
+  });
+  homeSearchButton.addEventListener("click", () => {
+    setPage("skills");
+    renderGrid();
+  });
+  triggerSearchInput?.addEventListener("input", (event) => {
+    triggerSearchQuery = event.target.value.trim();
+    renderTriggerList();
+  });
+  syncButton.addEventListener("click", async () => {
+    syncButton.textContent = "同步中...";
+    await loadPortfolio(true);
+    syncButton.textContent = "⟳ 重新同步数据";
+  });
+  favoritesToggle.addEventListener("click", () => {
+    favoritesOnly = !favoritesOnly;
+    renderAll();
+  });
+  sortToggle?.addEventListener("click", cycleSortMode);
+  filterReset?.addEventListener("click", () => {
+    activeCategory = "全部技能";
+    searchQuery = "";
+    triggerSearchQuery = "";
+    searchInput.value = "";
+    if (triggerSearchInput) triggerSearchInput.value = "";
+    favoritesOnly = false;
+    renderAll();
+  });
+  statsToggle?.addEventListener("click", () => {
+    statsMode = statsMode === "week" ? "total" : "week";
+    buildStats(payloadCache || window.__PORTFOLIO_DATA__);
+  });
+  clearDetailButton?.addEventListener("click", clearDetail);
+  detailFavoriteButton?.addEventListener("click", () => {
+    if (!selectedItemId) return;
+    toggleFavorite(selectedItemId);
+  });
+  copyTriggerButton?.addEventListener("click", () => copyText(detailRefs.trigger.textContent));
+  chartModeButtons.forEach((button) =>
+    button.addEventListener("click", () => {
+      chartMode = button.dataset.chartMode;
+      chartModeButtons.forEach((node) => node.classList.toggle("is-active", node.dataset.chartMode === chartMode));
+      renderDynamicGraph();
+    })
+  );
+  graphCenterButton?.addEventListener("click", () => runGraphAction("center"));
+  graphFitButton?.addEventListener("click", () => runGraphAction("fit"));
+  graphReheatButton?.addEventListener("click", () => runGraphAction("reheat"));
+  window.addEventListener("resize", () => {
+    if (activePage === "insight") renderDynamicGraph();
+  });
+}
+
+setupEvents();
+clearDetail();
+setPage("home");
 loadPortfolio().catch((error) => {
-  grid.innerHTML = `<article class="skill-empty">数据加载失败：${error.message}</article>`;
+  if (grid) {
+    grid.innerHTML = `<article class="skill-empty">数据加载失败：${error.message}</article>`;
+  }
 });

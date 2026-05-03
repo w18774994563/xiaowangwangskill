@@ -116,6 +116,12 @@ body::before {
   color: #383838;
   text-decoration: none;
   position: relative;
+  border: 0;
+  background: transparent;
+  font: inherit;
+  width: 100%;
+  cursor: pointer;
+  text-align: left;
 }
 
 .side-link.is-active {
@@ -187,21 +193,54 @@ body::before {
 
 .main-shell {
   display: grid;
-  gap: 18px;
+  grid-template-rows: auto minmax(0, 1fr);
+  gap: 12px;
+  min-height: calc(100vh - 36px);
 }
 
 .topbar {
-  min-height: 58px;
+  min-height: 44px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0 10px 0 12px;
+  padding: 4px 8px 0 8px;
 }
 
 .topbar-actions {
   display: flex;
   align-items: center;
   gap: 10px;
+}
+
+.topbar-copy {
+  display: grid;
+  gap: 4px;
+}
+
+.topbar-copy strong {
+  font-size: 1.08rem;
+}
+
+.topbar-copy span {
+  color: var(--muted);
+  font-size: 0.88rem;
+}
+
+.page-stack {
+  min-height: 0;
+  overflow: hidden;
+}
+
+.page-view {
+  display: none;
+  height: 100%;
+  overflow: auto;
+  gap: 18px;
+  padding-right: 6px;
+}
+
+.page-view.is-active {
+  display: grid;
 }
 
 .sync-button,
@@ -249,6 +288,10 @@ body::before {
   grid-template-columns: minmax(0, 1.6fr) minmax(240px, 0.7fr);
   overflow: hidden;
   min-height: 420px;
+}
+
+.hero-panel-home {
+  min-height: 400px;
 }
 
 .hero-copy {
@@ -426,6 +469,117 @@ body::before {
   gap: 18px;
 }
 
+.home-grid,
+.docs-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.compact-card {
+  min-height: 280px;
+}
+
+.featured-grid,
+.shortcut-list,
+.docs-list,
+.apps-grid,
+.trigger-list {
+  display: grid;
+  gap: 14px;
+}
+
+.featured-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.feature-card,
+.shortcut-card,
+.doc-row,
+.app-card {
+  border: 1px solid rgba(243, 231, 214, 0.86);
+  background: rgba(255, 255, 255, 0.78);
+  border-radius: 22px;
+  padding: 18px;
+  text-align: left;
+  font: inherit;
+  cursor: pointer;
+  color: inherit;
+}
+
+.feature-card strong,
+.app-card strong {
+  display: block;
+  font-size: 1rem;
+}
+
+.feature-card span,
+.feature-card small,
+.app-card small,
+.app-card span,
+.doc-row,
+.shortcut-card {
+  color: var(--muted);
+}
+
+.feature-card small,
+.app-card small,
+.app-card span {
+  display: block;
+  margin-top: 8px;
+}
+
+.shortcut-list {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.shortcut-card {
+  min-height: 92px;
+}
+
+.page-toolbar {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 18px;
+}
+
+.toolbar-title-group h2 {
+  margin: 0;
+  font-size: 1.9rem;
+}
+
+.toolbar-title-group p {
+  margin: 8px 0 0;
+  color: var(--muted);
+}
+
+.toolbar-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.inline-search {
+  min-width: 280px;
+  min-height: 44px;
+  padding: 0 14px;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(255, 255, 255, 0.82);
+  border: 1px solid rgba(243, 231, 214, 0.86);
+}
+
+.inline-search input {
+  border: 0;
+  outline: 0;
+  background: transparent;
+  font: inherit;
+  width: 100%;
+}
+
 .charts-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -444,13 +598,20 @@ body::before {
   padding: 0 18px;
 }
 
+.skill-row-shell {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+  padding: 16px 0;
+}
+
 .skill-row + .skill-row {
   border-top: 1px solid rgba(245, 233, 217, 0.9);
 }
 
 .skill-row-button {
   width: 100%;
-  padding: 16px 0;
+  padding: 0;
   border: 0;
   background: transparent;
   text-align: left;
@@ -459,6 +620,22 @@ body::before {
   align-items: center;
   justify-content: space-between;
   gap: 18px;
+  cursor: pointer;
+}
+
+.skill-row-actions {
+  display: grid;
+  gap: 10px;
+}
+
+.skill-mini-button {
+  min-width: 62px;
+  min-height: 34px;
+  border-radius: 12px;
+  border: 1px solid rgba(243, 231, 214, 0.86);
+  background: rgba(255, 255, 255, 0.82);
+  font: inherit;
+  color: #6e6b68;
   cursor: pointer;
 }
 
@@ -642,6 +819,20 @@ body::before {
   border: 1px solid rgba(231, 223, 214, 0.92);
   color: #7c8794;
   font-size: 0.82rem;
+  font: inherit;
+  cursor: pointer;
+}
+
+.chart-pill.is-active {
+  background: rgba(255, 255, 255, 0.92);
+  color: var(--orange);
+}
+
+.graph-toolbar {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-bottom: 12px;
 }
 
 .week-chip {
@@ -884,6 +1075,10 @@ body::before {
   height: 100%;
 }
 
+.graph-node text {
+  pointer-events: none;
+}
+
 .constellation-link {
   fill: none;
   stroke-linecap: round;
@@ -991,6 +1186,70 @@ body::before {
   font-size: 1.35rem;
   font-weight: 800;
   line-height: 1;
+}
+
+.trigger-page {
+  padding: 24px;
+}
+
+.trigger-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 18px 20px;
+  border-radius: 22px;
+  background: rgba(255, 255, 255, 0.7);
+  border: 1px solid rgba(243, 231, 214, 0.86);
+}
+
+.trigger-copy strong,
+.trigger-copy span {
+  display: block;
+}
+
+.trigger-copy span {
+  margin-top: 6px;
+  color: var(--muted);
+}
+
+.trigger-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.app-card-swatch {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  margin-bottom: 12px;
+}
+
+.sync-flow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.sync-flow-item {
+  flex: 1;
+  min-height: 76px;
+  padding: 16px;
+  display: grid;
+  place-items: center;
+  text-align: center;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.72);
+  border: 1px solid rgba(243, 231, 214, 0.86);
+}
+
+.sync-flow-line {
+  width: 28px;
+  height: 2px;
+  background: rgba(255, 170, 96, 0.45);
 }
 
 .bar-row {
@@ -1281,6 +1540,8 @@ body::before {
     grid-template-columns: 1fr;
   }
 
+  .home-grid,
+  .docs-grid,
   .charts-grid {
     grid-template-columns: 1fr;
   }
@@ -1312,6 +1573,7 @@ body::before {
   }
 
   .list-topline,
+  .page-toolbar,
   .detail-summary,
   .detail-footer,
   .detail-head,
@@ -1327,6 +1589,17 @@ body::before {
   .detail-meta-grid,
   .stats-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .featured-grid,
+  .shortcut-list {
+    grid-template-columns: 1fr;
+  }
+
+  .trigger-card,
+  .sync-flow {
+    flex-direction: column;
+    align-items: stretch;
   }
 
   .donut-layout {

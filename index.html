@@ -29,30 +29,30 @@
         </div>
 
         <nav class="side-nav">
-          <a class="side-link is-active" href="#hero">
+          <button class="side-link is-active" type="button" data-page-target="home">
             <span class="side-icon">⌂</span>
             <span>首页</span>
-          </a>
-          <a class="side-link" href="#database">
+          </button>
+          <button class="side-link" type="button" data-page-target="skills">
             <span class="side-icon">⌘</span>
             <span>技能库</span>
-          </a>
-          <a class="side-link" href="#database">
+          </button>
+          <button class="side-link" type="button" data-page-target="triggers">
             <span class="side-icon">◎</span>
             <span>触发词库</span>
-          </a>
-          <a class="side-link" href="#detail">
+          </button>
+          <button class="side-link" type="button" data-page-target="apps">
             <span class="side-icon">⌗</span>
             <span>应用管理</span>
-          </a>
-          <a class="side-link" href="#insight">
+          </button>
+          <button class="side-link" type="button" data-page-target="insight">
             <span class="side-icon">◫</span>
             <span>数据看板</span>
-          </a>
-          <a class="side-link" href="#detail">
+          </button>
+          <button class="side-link" type="button" data-page-target="docs">
             <span class="side-icon">▣</span>
             <span>使用文档</span>
-          </a>
+          </button>
         </nav>
 
         <div class="sidebar-sync">
@@ -66,332 +66,450 @@
 
       <main class="main-shell">
         <header class="topbar">
-          <div class="topbar-ghost"></div>
+          <div class="topbar-copy">
+            <strong data-page-title>首页</strong>
+            <span data-page-summary>快速浏览技能、分类和同步状态。</span>
+          </div>
           <div class="topbar-actions">
-            <button class="sync-button" type="button">⟳ 同步链路</button>
-            <button class="icon-button" type="button" aria-label="提醒">◔</button>
-            <button class="avatar-button" type="button" aria-label="账户">W</button>
-            <button class="icon-button" type="button" aria-label="展开">⌄</button>
+            <button class="sync-button" type="button" data-sync-button>⟳ 重新同步数据</button>
+            <button class="ghost-select" type="button" data-favorites-toggle>只看收藏</button>
           </div>
         </header>
 
-        <section class="hero-panel" id="hero">
-          <div class="hero-copy">
-            <h1>技能数据库</h1>
-            <p>探索、发现并集成飞书生态中的优质技能</p>
+        <div class="page-stack">
+          <section class="page-view is-active" data-page-view="home">
+            <section class="hero-panel hero-panel-home">
+              <div class="hero-copy">
+                <h1>技能数据库</h1>
+                <p>探索、发现并集成飞书生态中的优质技能</p>
 
-            <label class="search-bar" for="skill-search">
-              <span class="search-mark">⌕</span>
-              <input
-                id="skill-search"
-                data-search
-                type="search"
-                placeholder="搜索技能名、功能或触发词"
-                autocomplete="off"
-              />
-              <button class="search-cta" type="button" data-clear-search aria-label="清空搜索">⌕</button>
-            </label>
+                <label class="search-bar" for="skill-search">
+                  <span class="search-mark">⌕</span>
+                  <input
+                    id="skill-search"
+                    data-search
+                    type="search"
+                    placeholder="搜索技能名、功能或触发词"
+                    autocomplete="off"
+                  />
+                  <button class="search-cta" type="button" data-home-search aria-label="执行搜索">⌕</button>
+                </label>
 
-            <div class="category-strip" data-filters></div>
+                <div class="category-strip" data-filters></div>
 
-            <div class="list-topline">
-              <p>共 <span data-total-count>0</span> 个技能</p>
-              <div class="list-actions">
-                <button class="ghost-select" type="button">最新发布 ⌄</button>
-                <button class="ghost-select" type="button">⌕ 筛选</button>
-              </div>
-            </div>
-          </div>
-
-          <div class="hero-visual" aria-hidden="true">
-            <div class="hero-circle"></div>
-            <div class="hero-stack">
-              <div class="stack-layer stack-top">
-                <span>◉</span>
-              </div>
-              <div class="stack-layer stack-mid"></div>
-              <div class="stack-layer stack-low"></div>
-              <div class="stack-cube cube-mint"></div>
-              <div class="stack-cube cube-orange"></div>
-            </div>
-          </div>
-        </section>
-
-        <section class="content-grid">
-          <div class="list-panel" id="database">
-            <div class="skills-list" data-grid>
-              <article class="skill-empty">正在加载技能数据...</article>
-            </div>
-          </div>
-
-          <aside class="insight-panel" id="insight">
-            <div class="insight-card">
-              <div class="insight-head">
-                <h2>技能总览</h2>
-                <button class="week-chip" type="button">本周 ⌄</button>
-              </div>
-
-              <div class="stats-grid">
-                <article>
-                  <span>技能总数</span>
-                  <strong data-counter="items">0</strong>
-                  <small>较上周 ↑ 12</small>
-                </article>
-                <article>
-                  <span>已启用</span>
-                  <strong data-counter="enabled">0</strong>
-                  <small>较上周 ↑ 8</small>
-                </article>
-                <article>
-                  <span>使用次数</span>
-                  <strong data-counter="uses">0</strong>
-                  <small>较上周 ↑ 18%</small>
-                </article>
-                <article>
-                  <span>覆盖应用</span>
-                  <strong data-counter="apps">0</strong>
-                  <small>较上周 ↑ 2</small>
-                </article>
-              </div>
-            </div>
-
-            <div class="trend-card">
-              <div class="trend-head">
-                <h3>技能使用趋势</h3>
-              </div>
-              <div class="trend-chart">
-                <div class="trend-axis">
-                  <span>3k</span>
-                  <span>2k</span>
-                  <span>1k</span>
-                  <span>0</span>
-                </div>
-                <div class="trend-canvas">
-                  <svg viewBox="0 0 320 160" preserveAspectRatio="none" aria-hidden="true">
-                    <defs>
-                      <linearGradient id="trend-fill" x1="0" x2="0" y1="0" y2="1">
-                        <stop offset="0%" stop-color="#9feee2" stop-opacity="0.45"></stop>
-                        <stop offset="100%" stop-color="#9feee2" stop-opacity="0.05"></stop>
-                      </linearGradient>
-                    </defs>
-                    <path
-                      d="M18 112 C 40 96, 55 80, 78 90 S 116 96, 134 80 S 162 84, 180 66 S 220 50, 236 42 S 270 58, 290 24 S 316 32, 316 32 L316 150 L18 150 Z"
-                      fill="url(#trend-fill)"
-                    ></path>
-                    <path
-                      d="M18 112 C 40 96, 55 80, 78 90 S 116 96, 134 80 S 162 84, 180 66 S 220 50, 236 42 S 270 58, 290 24 S 316 32, 316 32"
-                      fill="none"
-                      stroke="#88e7d8"
-                      stroke-width="4"
-                      stroke-linecap="round"
-                    ></path>
-                    <circle cx="316" cy="32" r="6" fill="#88e7d8"></circle>
-                  </svg>
-                  <div class="trend-badge" data-counter="uses">0</div>
-                </div>
-              </div>
-              <div class="trend-labels">
-                <span>05-19</span>
-                <span>05-20</span>
-                <span>05-21</span>
-                <span>05-22</span>
-                <span>05-23</span>
-                <span>05-24</span>
-                <span>05-25</span>
-              </div>
-            </div>
-
-            <div class="chart-card chart-donut">
-              <div class="chart-head">
-                <h3>分类占比</h3>
-              </div>
-              <div class="donut-layout">
-                <div class="donut-ring">
-                  <svg viewBox="0 0 160 160" aria-hidden="true">
-                    <circle cx="80" cy="80" r="58" class="donut-base"></circle>
-                    <circle cx="80" cy="80" r="58" class="donut-seg seg-a" data-donut-a></circle>
-                    <circle cx="80" cy="80" r="58" class="donut-seg seg-b" data-donut-b></circle>
-                    <circle cx="80" cy="80" r="58" class="donut-seg seg-c" data-donut-c></circle>
-                  </svg>
-                  <div class="donut-center">
-                    <strong data-counter="items">0</strong>
-                    <span>全部技能</span>
+                <div class="list-topline">
+                  <p>共 <span data-total-count>0</span> 个技能</p>
+                  <div class="list-actions">
+                    <button class="ghost-select" type="button" data-open-page="skills">进入技能库</button>
+                    <button class="ghost-select" type="button" data-open-page="insight">查看看板</button>
                   </div>
                 </div>
-                <div class="legend-list" data-legend-list></div>
               </div>
-            </div>
-          </aside>
-        </section>
 
-        <section class="charts-grid">
-          <article class="chart-card chart-card-wide constellation-card">
-            <div class="chart-head chart-head-stack">
-              <div>
-                <span class="chart-kicker">Graph View</span>
-                <h3>技能关系气泡图</h3>
+              <div class="hero-visual" aria-hidden="true">
+                <div class="hero-circle"></div>
+                <div class="hero-stack">
+                  <div class="stack-layer stack-top">
+                    <span>◉</span>
+                  </div>
+                  <div class="stack-layer stack-mid"></div>
+                  <div class="stack-layer stack-low"></div>
+                  <div class="stack-cube cube-mint"></div>
+                  <div class="stack-cube cube-orange"></div>
+                </div>
               </div>
-              <div class="chart-pills">
-                <span class="chart-pill">分类</span>
-                <span class="chart-pill">触发词</span>
-                <span class="chart-pill">连接强度</span>
+            </section>
+
+            <section class="home-grid">
+              <article class="chart-card compact-card">
+                <div class="chart-head">
+                  <h3>精选技能</h3>
+                  <button class="ghost-select" type="button" data-open-page="skills">查看全部</button>
+                </div>
+                <div class="featured-grid" data-featured-grid></div>
+              </article>
+
+              <article class="chart-card compact-card">
+                <div class="chart-head">
+                  <h3>快捷入口</h3>
+                </div>
+                <div class="shortcut-list">
+                  <button class="shortcut-card" type="button" data-open-page="triggers">复制触发词</button>
+                  <button class="shortcut-card" type="button" data-open-page="apps">按分类管理</button>
+                  <button class="shortcut-card" type="button" data-open-page="docs">查看文档</button>
+                  <button class="shortcut-card" type="button" data-open-page="insight">浏览图表</button>
+                </div>
+              </article>
+            </section>
+          </section>
+
+          <section class="page-view" data-page-view="skills">
+            <div class="page-toolbar">
+              <div class="toolbar-title-group">
+                <h2>技能库</h2>
+                <p>按分类、收藏和排序查看技能。</p>
               </div>
-            </div>
-            <div class="constellation-stage">
-              <div class="constellation-glow glow-a"></div>
-              <div class="constellation-glow glow-b"></div>
-              <svg class="constellation-links" viewBox="0 0 1000 520" preserveAspectRatio="none" data-links></svg>
-              <div class="constellation-bubbles" data-bubbles></div>
-            </div>
-          </article>
-
-          <article class="chart-card signal-card">
-            <div class="chart-head chart-head-stack">
-              <div>
-                <span class="chart-kicker">Signal Stack</span>
-                <h3>高频标签信号</h3>
-              </div>
-              <span>Top 5</span>
-            </div>
-            <div class="signal-list" data-signal-list></div>
-          </article>
-
-          <article class="chart-card">
-            <div class="chart-head">
-              <h3>分类热度排行</h3>
-              <span>Top 6</span>
-            </div>
-            <div class="bar-chart" data-bar-chart></div>
-          </article>
-
-          <article class="chart-card">
-            <div class="chart-head chart-head-stack">
-              <div>
-                <h3>触发节奏</h3>
-                <span>字符长度分布</span>
-              </div>
-            </div>
-            <div class="mini-bars" data-mini-bars></div>
-          </article>
-
-          <article class="chart-card">
-            <div class="chart-head">
-              <h3>技能覆盖矩阵</h3>
-              <span>热力图</span>
-            </div>
-            <div class="heatmap" data-heatmap></div>
-          </article>
-        </section>
-
-        <section class="detail-panel" id="detail">
-          <div class="detail-head">
-            <div>
-              <h2>技能详情</h2>
-            </div>
-            <button class="close-chip" type="button">×</button>
-          </div>
-
-          <div class="detail-summary">
-            <div class="detail-icon" data-detail-symbol>文</div>
-            <div class="detail-copy">
-              <div class="detail-title-row">
-                <h3 data-detail-title>加载中</h3>
-                <span class="detail-tag">官方</span>
-                <span class="detail-tag detail-tag-soft">精选</span>
-              </div>
-              <p data-detail-description>正在准备技能详情。</p>
-              <div class="detail-meta-row">
-                <span>触发词：</span>
-                <strong data-detail-trigger>/doc.summarize</strong>
-                <span>应用：</span>
-                <strong data-detail-app>文档</strong>
-              </div>
-            </div>
-            <div class="detail-actions">
-              <button class="apply-button" type="button">应用此技能</button>
-              <button class="mini-icon" type="button" aria-label="收藏">☆</button>
-              <button class="mini-icon" type="button" aria-label="更多">⋯</button>
-            </div>
-          </div>
-
-          <div class="detail-tabs">
-            <button class="detail-tab is-active" type="button">技能介绍</button>
-            <button class="detail-tab" type="button">触发词</button>
-            <button class="detail-tab" type="button">使用示例</button>
-            <button class="detail-tab" type="button">相关技能</button>
-            <button class="detail-tab" type="button">版本记录</button>
-          </div>
-
-          <div class="detail-body">
-            <div class="detail-card detail-intro">
-              <p data-detail-body>
-                选择左侧技能后，这里会展示它的功能说明、使用方式以及推荐场景。
-              </p>
-              <div class="detail-meta-grid">
-                <article>
-                  <span>开发者</span>
-                  <strong data-detail-dev>飞书官方</strong>
-                </article>
-                <article>
-                  <span>适用场景</span>
-                  <strong data-detail-scene>技能管理</strong>
-                </article>
-                <article>
-                  <span>更新时间</span>
-                  <strong>2024-05-20</strong>
-                </article>
-                <article>
-                  <span>版本</span>
-                  <strong>v2.1.0</strong>
-                </article>
+              <div class="toolbar-actions">
+                <button class="ghost-select" type="button" data-sort-toggle>排序：默认</button>
+                <button class="ghost-select" type="button" data-filter-reset>清空筛选</button>
               </div>
             </div>
 
-            <div class="detail-card detail-stats">
-              <h4>使用统计</h4>
-              <dl>
-                <div><dt>使用次数</dt><dd data-counter="detailUses">0</dd></div>
-                <div><dt>用户数</dt><dd data-counter="detailUsers">0</dd></div>
-                <div><dt>好评率</dt><dd data-counter="detailRating">0%</dd></div>
-              </dl>
-            </div>
-          </div>
+            <section class="content-grid">
+              <div class="list-panel">
+                <div class="skills-list" data-grid>
+                  <article class="skill-empty">正在加载技能数据...</article>
+                </div>
+              </div>
 
-          <div class="detail-footer">
-            <p>权限说明</p>
-            <span data-detail-footer>读取文档内容、写入摘要提要</span>
-            <button class="detail-link" type="button" data-copy-trigger>复制触发词</button>
-          </div>
-        </section>
+              <aside class="insight-panel">
+                <div class="insight-card">
+                  <div class="insight-head">
+                    <h2>技能总览</h2>
+                    <button class="week-chip" type="button" data-stats-toggle>本周</button>
+                  </div>
+
+                  <div class="stats-grid">
+                    <article>
+                      <span>技能总数</span>
+                      <strong data-counter="items">0</strong>
+                      <small data-stats-note="items">较上周 ↑ 12</small>
+                    </article>
+                    <article>
+                      <span>已启用</span>
+                      <strong data-counter="enabled">0</strong>
+                      <small data-stats-note="enabled">较上周 ↑ 8</small>
+                    </article>
+                    <article>
+                      <span>使用次数</span>
+                      <strong data-counter="uses">0</strong>
+                      <small data-stats-note="uses">较上周 ↑ 18%</small>
+                    </article>
+                    <article>
+                      <span>覆盖应用</span>
+                      <strong data-counter="apps">0</strong>
+                      <small data-stats-note="apps">较上周 ↑ 2</small>
+                    </article>
+                  </div>
+                </div>
+
+                <div class="trend-card">
+                  <div class="trend-head">
+                    <h3>技能使用趋势</h3>
+                  </div>
+                  <div class="trend-chart">
+                    <div class="trend-axis">
+                      <span>3k</span>
+                      <span>2k</span>
+                      <span>1k</span>
+                      <span>0</span>
+                    </div>
+                    <div class="trend-canvas">
+                      <svg viewBox="0 0 320 160" preserveAspectRatio="none" aria-hidden="true">
+                        <defs>
+                          <linearGradient id="trend-fill" x1="0" x2="0" y1="0" y2="1">
+                            <stop offset="0%" stop-color="#9feee2" stop-opacity="0.45"></stop>
+                            <stop offset="100%" stop-color="#9feee2" stop-opacity="0.05"></stop>
+                          </linearGradient>
+                        </defs>
+                        <path
+                          d="M18 112 C 40 96, 55 80, 78 90 S 116 96, 134 80 S 162 84, 180 66 S 220 50, 236 42 S 270 58, 290 24 S 316 32, 316 32 L316 150 L18 150 Z"
+                          fill="url(#trend-fill)"
+                        ></path>
+                        <path
+                          d="M18 112 C 40 96, 55 80, 78 90 S 116 96, 134 80 S 162 84, 180 66 S 220 50, 236 42 S 270 58, 290 24 S 316 32, 316 32"
+                          fill="none"
+                          stroke="#88e7d8"
+                          stroke-width="4"
+                          stroke-linecap="round"
+                        ></path>
+                        <circle cx="316" cy="32" r="6" fill="#88e7d8"></circle>
+                      </svg>
+                      <div class="trend-badge" data-counter="uses">0</div>
+                    </div>
+                  </div>
+                  <div class="trend-labels">
+                    <span>05-19</span>
+                    <span>05-20</span>
+                    <span>05-21</span>
+                    <span>05-22</span>
+                    <span>05-23</span>
+                    <span>05-24</span>
+                    <span>05-25</span>
+                  </div>
+                </div>
+
+                <div class="chart-card chart-donut">
+                  <div class="chart-head">
+                    <h3>分类占比</h3>
+                  </div>
+                  <div class="donut-layout">
+                    <div class="donut-ring">
+                      <svg viewBox="0 0 160 160" aria-hidden="true">
+                        <circle cx="80" cy="80" r="58" class="donut-base"></circle>
+                        <circle cx="80" cy="80" r="58" class="donut-seg seg-a" data-donut-a></circle>
+                        <circle cx="80" cy="80" r="58" class="donut-seg seg-b" data-donut-b></circle>
+                        <circle cx="80" cy="80" r="58" class="donut-seg seg-c" data-donut-c></circle>
+                      </svg>
+                      <div class="donut-center">
+                        <strong data-counter="items">0</strong>
+                        <span>全部技能</span>
+                      </div>
+                    </div>
+                    <div class="legend-list" data-legend-list></div>
+                  </div>
+                </div>
+              </aside>
+            </section>
+
+            <section class="detail-panel">
+              <div class="detail-head">
+                <div>
+                  <h2>技能详情</h2>
+                </div>
+                <button class="close-chip" type="button" data-clear-detail>×</button>
+              </div>
+
+              <div class="detail-summary">
+                <div class="detail-icon" data-detail-symbol>文</div>
+                <div class="detail-copy">
+                  <div class="detail-title-row">
+                    <h3 data-detail-title>加载中</h3>
+                    <span class="detail-tag">官方</span>
+                    <span class="detail-tag detail-tag-soft">精选</span>
+                  </div>
+                  <p data-detail-description>正在准备技能详情。</p>
+                  <div class="detail-meta-row">
+                    <span>触发词：</span>
+                    <strong data-detail-trigger>/doc.summarize</strong>
+                    <span>应用：</span>
+                    <strong data-detail-app>文档</strong>
+                  </div>
+                </div>
+                <div class="detail-actions">
+                  <button class="apply-button" type="button" data-copy-trigger>复制触发词</button>
+                  <button class="mini-icon" type="button" data-favorite-detail aria-label="收藏">☆</button>
+                </div>
+              </div>
+
+              <div class="detail-tabs">
+                <button class="detail-tab is-active" type="button">技能介绍</button>
+                <button class="detail-tab" type="button">触发词</button>
+                <button class="detail-tab" type="button">使用示例</button>
+              </div>
+
+              <div class="detail-body">
+                <div class="detail-card detail-intro">
+                  <p data-detail-body>
+                    选择左侧技能后，这里会展示它的功能说明、使用方式以及推荐场景。
+                  </p>
+                  <div class="detail-meta-grid">
+                    <article>
+                      <span>开发者</span>
+                      <strong data-detail-dev>飞书官方</strong>
+                    </article>
+                    <article>
+                      <span>适用场景</span>
+                      <strong data-detail-scene>技能管理</strong>
+                    </article>
+                    <article>
+                      <span>更新时间</span>
+                      <strong>2024-05-20</strong>
+                    </article>
+                    <article>
+                      <span>版本</span>
+                      <strong>v2.1.0</strong>
+                    </article>
+                  </div>
+                </div>
+
+                <div class="detail-card detail-stats">
+                  <h4>使用统计</h4>
+                  <dl>
+                    <div><dt>使用次数</dt><dd data-counter="detailUses">0</dd></div>
+                    <div><dt>用户数</dt><dd data-counter="detailUsers">0</dd></div>
+                    <div><dt>好评率</dt><dd data-counter="detailRating">0%</dd></div>
+                  </dl>
+                </div>
+              </div>
+
+              <div class="detail-footer">
+                <p>权限说明</p>
+                <span data-detail-footer>复制触发词后可直接调用。</span>
+              </div>
+            </section>
+          </section>
+
+          <section class="page-view" data-page-view="triggers">
+            <section class="chart-card trigger-page">
+              <div class="page-toolbar">
+                <div class="toolbar-title-group">
+                  <h2>触发词库</h2>
+                  <p>搜索、复制并按技能来源查看全部触发词。</p>
+                </div>
+                <div class="toolbar-actions">
+                  <label class="inline-search" for="trigger-search">
+                    <span>⌕</span>
+                    <input id="trigger-search" type="search" data-trigger-search placeholder="搜索触发词或技能名" />
+                  </label>
+                </div>
+              </div>
+              <div class="trigger-list" data-trigger-list></div>
+            </section>
+          </section>
+
+          <section class="page-view" data-page-view="apps">
+            <section class="page-toolbar">
+              <div class="toolbar-title-group">
+                <h2>应用管理</h2>
+                <p>按分类管理技能，点击后直接切到技能库查看具体条目。</p>
+              </div>
+            </section>
+            <div class="apps-grid" data-app-grid></div>
+          </section>
+
+          <section class="page-view" data-page-view="insight">
+            <section class="page-toolbar">
+              <div class="toolbar-title-group">
+                <h2>数据看板</h2>
+                <p>关系图、标签信号、排行与覆盖矩阵集中浏览。</p>
+              </div>
+              <div class="toolbar-actions">
+                <button class="ghost-select" type="button" data-chart-mode="categories">看分类</button>
+                <button class="ghost-select" type="button" data-chart-mode="triggers">看触发词</button>
+              </div>
+            </section>
+            <section class="charts-grid">
+              <article class="chart-card chart-card-wide constellation-card">
+                <div class="chart-head chart-head-stack">
+                  <div>
+                    <span class="chart-kicker">Graph View</span>
+                    <h3>技能关系气泡图</h3>
+                  </div>
+                  <div class="chart-pills">
+                    <button class="chart-pill" type="button" data-chart-mode="categories">分类</button>
+                    <button class="chart-pill" type="button" data-chart-mode="triggers">触发词</button>
+                    <button class="chart-pill" type="button" data-open-page="skills">查看技能</button>
+                  </div>
+                </div>
+                <div class="graph-toolbar">
+                  <button class="ghost-select" type="button" data-graph-center>居中视图</button>
+                  <button class="ghost-select" type="button" data-graph-fit>适应视图</button>
+                  <button class="ghost-select" type="button" data-graph-reheat>重置布局</button>
+                </div>
+                <div class="constellation-stage">
+                  <div class="constellation-glow glow-a"></div>
+                  <div class="constellation-glow glow-b"></div>
+                  <svg class="constellation-links" viewBox="0 0 1000 520" preserveAspectRatio="none" data-links></svg>
+                  <div class="constellation-bubbles" data-bubbles></div>
+                </div>
+              </article>
+
+              <article class="chart-card signal-card">
+                <div class="chart-head chart-head-stack">
+                  <div>
+                    <span class="chart-kicker">Signal Stack</span>
+                    <h3>高频标签信号</h3>
+                  </div>
+                  <span>Top 5</span>
+                </div>
+                <div class="signal-list" data-signal-list></div>
+              </article>
+
+              <article class="chart-card">
+                <div class="chart-head">
+                  <h3>分类热度排行</h3>
+                  <span>Top 6</span>
+                </div>
+                <div class="bar-chart" data-bar-chart></div>
+              </article>
+
+              <article class="chart-card">
+                <div class="chart-head chart-head-stack">
+                  <div>
+                    <h3>触发节奏</h3>
+                    <span>字符长度分布</span>
+                  </div>
+                </div>
+                <div class="mini-bars" data-mini-bars></div>
+              </article>
+
+              <article class="chart-card">
+                <div class="chart-head">
+                  <h3>技能覆盖矩阵</h3>
+                  <span>热力图</span>
+                </div>
+                <div class="heatmap" data-heatmap></div>
+              </article>
+            </section>
+          </section>
+
+          <section class="page-view" data-page-view="docs">
+            <section class="docs-grid">
+              <article class="chart-card compact-card">
+                <div class="chart-head">
+                  <h3>使用文档</h3>
+                </div>
+                <div class="docs-list">
+                  <button class="doc-row" type="button" data-open-page="skills">1. 先在技能库选择目标技能</button>
+                  <button class="doc-row" type="button" data-open-page="triggers">2. 到触发词库复制触发词</button>
+                  <button class="doc-row" type="button" data-open-page="apps">3. 在应用管理查看分类归属</button>
+                  <button class="doc-row" type="button" data-open-page="insight">4. 在数据看板观察使用分布</button>
+                </div>
+              </article>
+
+              <article class="chart-card compact-card">
+                <div class="chart-head">
+                  <h3>同步说明</h3>
+                </div>
+                <div class="sync-flow">
+                  <div class="sync-flow-item">飞书多维表格</div>
+                  <div class="sync-flow-line"></div>
+                  <div class="sync-flow-item">refresh.py</div>
+                  <div class="sync-flow-line"></div>
+                  <div class="sync-flow-item">portfolio.json / portfolio.js</div>
+                  <div class="sync-flow-line"></div>
+                  <div class="sync-flow-item">GitHub Pages</div>
+                </div>
+              </article>
+            </section>
+          </section>
+        </div>
       </main>
     </div>
 
     <template id="work-card-template">
       <article class="skill-row">
-        <button class="skill-row-button" type="button">
-          <div class="skill-leading">
-            <div class="skill-icon"></div>
-            <div class="skill-text">
-              <div class="skill-title-line">
-                <h3 class="skill-title"></h3>
-                <span class="skill-badge">官方</span>
-              </div>
-              <p class="skill-desc"></p>
-              <div class="skill-meta">
-                <span class="skill-trigger"></span>
-                <span class="skill-app"></span>
+        <div class="skill-row-shell">
+          <button class="skill-row-button" type="button">
+            <div class="skill-leading">
+              <div class="skill-icon"></div>
+              <div class="skill-text">
+                <div class="skill-title-line">
+                  <h3 class="skill-title"></h3>
+                  <span class="skill-badge">官方</span>
+                </div>
+                <p class="skill-desc"></p>
+                <div class="skill-meta">
+                  <span class="skill-trigger"></span>
+                  <span class="skill-app"></span>
+                </div>
               </div>
             </div>
+            <div class="skill-trailing">
+              <span class="skill-status">已启用</span>
+            </div>
+          </button>
+          <div class="skill-row-actions">
+            <button class="skill-mini-button" type="button" data-row-copy>复制</button>
+            <button class="skill-mini-button" type="button" data-row-favorite>收藏</button>
           </div>
-          <div class="skill-trailing">
-            <span class="skill-status">已启用</span>
-            <span class="skill-star">☆</span>
-          </div>
-        </button>
+        </div>
       </article>
     </template>
 
     <script src="./api/portfolio.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
     <script src="./assets/app.js"></script>
   </body>
 </html>
