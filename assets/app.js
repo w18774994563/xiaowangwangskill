@@ -1,8 +1,6 @@
 const pageViews = [...document.querySelectorAll("[data-page-view]")];
 const pageNavButtons = [...document.querySelectorAll("[data-page-target]")];
 const openPageButtons = [...document.querySelectorAll("[data-open-page]")];
-const pageTitle = document.querySelector("[data-page-title]");
-const pageSummary = document.querySelector("[data-page-summary]");
 const searchInput = document.querySelector("[data-search]");
 const triggerSearchInput = document.querySelector("[data-trigger-search]");
 const filters = document.querySelector("[data-filters]");
@@ -30,10 +28,21 @@ const donutA = document.querySelector("[data-donut-a]");
 const donutB = document.querySelector("[data-donut-b]");
 const donutC = document.querySelector("[data-donut-c]");
 const graphSvg = document.querySelector("[data-links]");
+const clusterKind = document.querySelector("[data-cluster-kind]");
+const clusterTitle = document.querySelector("[data-cluster-title]");
+const clusterSummary = document.querySelector("[data-cluster-summary]");
+const clusterCount = document.querySelector("[data-cluster-count]");
+const clusterSkills = document.querySelector("[data-cluster-skills]");
+const clusterTags = document.querySelector("[data-cluster-tags]");
+const timelineChart = document.querySelector("[data-timeline-chart]");
+const timelineTitle = document.querySelector("[data-timeline-title]");
+const timelineMeta = document.querySelector("[data-timeline-meta]");
+const timelineList = document.querySelector("[data-timeline-list]");
 const graphCenterButton = document.querySelector("[data-graph-center]");
 const graphFitButton = document.querySelector("[data-graph-fit]");
 const graphReheatButton = document.querySelector("[data-graph-reheat]");
 const chartModeButtons = [...document.querySelectorAll("[data-chart-mode]")];
+const timelineModeButtons = [...document.querySelectorAll("[data-timeline-mode]")];
 const lastSync = document.querySelector("[data-last-sync]");
 
 const detailRefs = {
@@ -55,15 +64,6 @@ const statsNotes = {
   apps: document.querySelector("[data-stats-note='apps']"),
 };
 
-const pageMeta = {
-  home: ["首页", "快速浏览技能、分类和同步状态。"],
-  skills: ["技能库", "按分类、收藏和排序查看技能。"],
-  triggers: ["触发词库", "复制、搜索并管理技能触发词。"],
-  apps: ["应用管理", "按分类管理技能并直接跳转查看。"],
-  insight: ["数据看板", "动态关系图与统计洞察。"],
-  docs: ["使用文档", "查看使用流程与同步说明。"],
-};
-
 const palette = ["#7de9db", "#ffc2a4", "#c7b1ff", "#ffb4d6", "#a5ddff", "#ffdc9a", "#b8f1ff"];
 const donutCircumference = 364.4;
 
@@ -77,6 +77,8 @@ let selectedItemId = "";
 let sortMode = "default";
 let statsMode = "week";
 let chartMode = "categories";
+let timelineMode = "recent";
+let insightFocus = null;
 const favorites = new Set(JSON.parse(localStorage.getItem("xww-favorites") || "[]"));
 let favoritesOnly = false;
 let graphState = null;
@@ -138,6 +140,32 @@ function categoryCounts(items = portfolioItems) {
   return [...counts.entries()].sort((a, b) => b[1] - a[1]);
 }
 
+function computeRecentItems() {
+  return [...portfolioItems]
+    .sort((a, b) => Number(b.order || 0) - Number(a.order || 0))
+    .slice(0, 6);
+}
+
+function computeHeatSeries() {
+  const base = categoryCounts().slice(0, 6);
+  return base.map(([name, count], index) => ({
+    label: name,
+    value: count + (index % 2 === 0 ? 8 : 3),
+    delta: Math.max(1, Math.round(count * 0.18)),
+  }));
+}
+
+function computeTriggerActivity() {
+  return signalCounts()
+    .filter(([label]) => label.startsWith("#"))
+    .slice(0, 6)
+    .map(([label, count], index) => ({
+      label,
+      value: count,
+      delta: Math.max(1, Math.round((count / (index + 2)) * 0.4)),
+    }));
+}
+
 function signalCounts(items = portfolioItems) {
   const counts = new Map();
   items.forEach((item) => {
@@ -158,14 +186,17 @@ function setPage(pageId) {
   activePage = pageId;
   pageViews.forEach((view) => view.classList.toggle("is-active", view.dataset.pageView === pageId));
   pageNavButtons.forEach((button) => button.classList.toggle("is-active", button.dataset.pageTarget === pageId));
-  pageTitle.textContent = pageMeta[pageId][0];
-  pageSummary.textContent = pageMeta[pageId][1];
 }
 
 function openSkillsWithCategory(category) {
   activeCategory = category || "全部技能";
   renderFilters();
   renderGrid();
+  setPage("skills");
+}
+
+function openSkillFromInsight(item) {
+  setActiveDetail(item);
   setPage("skills");
 }
 
@@ -426,6 +457,196 @@ function renderAppGrid() {
   });
 }
 
+function renderClusterPanel(target = insightFocus) {
+  if (!clusterSkills || !clusterTags) return;
+  const focus = target || { type: "hint" };
+  insightFocus = focus;
+  clusterSkills.innerHTML = "";
+  clusterTags.innerHTML = "";
+
+  if (focus.type === "hint") {
+    clusterKind.textContent = "等待选择";
+    clusterTitle.textContent = "点击关系图中的节点";
+    clusterSummary.textContent = "右侧会展开它的关联技能、分类和标签。";
+    clusterCount.textContent = "0 项";
+    return;
+  }
+
+  let relatedItems = [];
+  let tags = [];
+  let summary = "";
+  let kindLabel = "";
+  let title = focus.label;
+
+  if (focus.type === "skill" && focus.item) {
+    relatedItems = portfolioItems
+      .filter(
+        (item) =>
+          item.record_id !== focus.item.record_id &&
+          (item.categories || []).some((category) => (focus.item.categories || []).includes(category))
+      )
+      .slice(0, 5);
+    tags = [...new Set([...(focus.item.categories || []), ...tokenizeSignals(focus.item).slice(0, 5)])];
+    summary = `与 ${focus.item.title} 同分类或共享触发语义的技能集合。`;
+    kindLabel = "技能";
+  } else if (focus.type === "category") {
+    relatedItems = portfolioItems.filter((item) => (item.categories || []).includes(focus.label)).slice(0, 6);
+    tags = [...new Set(relatedItems.flatMap((item) => tokenizeSignals(item).slice(0, 2)))].slice(0, 8);
+    summary = `${focus.label} 分类下的代表技能与常见触发信号。`;
+    kindLabel = "分类";
+  } else if (focus.type === "token") {
+    const token = focus.label.replace(/^#/, "").toLowerCase();
+    relatedItems = portfolioItems
+      .filter((item) => tokenizeSignals(item).some((signal) => signal.replace(/^#/, "") === token))
+      .slice(0, 6);
+    tags = [...new Set(relatedItems.flatMap((item) => item.categories || []))].slice(0, 8);
+    summary = `${focus.label} 相关的技能集合与归属分类。`;
+    kindLabel = "触发词";
+  }
+
+  clusterKind.textContent = kindLabel;
+  clusterTitle.textContent = title;
+  clusterSummary.textContent = summary;
+  clusterCount.textContent = `${relatedItems.length} 项`;
+
+  relatedItems.forEach((item) => {
+    const node = document.createElement("button");
+    node.className = "cluster-item";
+    node.type = "button";
+    node.innerHTML = `
+      <div class="cluster-item-title">
+        <strong>${item.title}</strong>
+        <span>${detailCategory(item)}</span>
+      </div>
+      <div class="cluster-item-meta">${item.trigger_words || item.tools || "暂无说明"}</div>
+    `;
+    node.addEventListener("click", () => openSkillFromInsight(item));
+    clusterSkills.appendChild(node);
+  });
+
+  tags.forEach((tag) => {
+    const chip = document.createElement("span");
+    chip.className = "cluster-chip";
+    chip.textContent = tag.startsWith("#") ? tag : `#${tag}`;
+    clusterTags.appendChild(chip);
+  });
+}
+
+function renderTimeline() {
+  if (!timelineChart || !timelineList) return;
+  const d3 = window.d3;
+  let series = [];
+
+  if (timelineMode === "recent") {
+    series = computeRecentItems().map((item, index) => ({
+      label: item.title.length > 10 ? `${item.title.slice(0, 9)}…` : item.title,
+      rawLabel: item.title,
+      value: Math.max(8, (item.tools || "").length + index * 3),
+      meta: item.trigger_words || detailCategory(item),
+      accent: palette[index % palette.length],
+    }));
+    timelineTitle.textContent = "最近更新";
+    timelineMeta.textContent = "最近入库技能";
+  } else if (timelineMode === "heat") {
+    series = computeHeatSeries().map((item, index) => ({
+      label: item.label,
+      rawLabel: item.label,
+      value: item.value,
+      meta: `较前一周期 +${item.delta}`,
+      accent: palette[index % palette.length],
+    }));
+    timelineTitle.textContent = "热度变化";
+    timelineMeta.textContent = "分类热度走势";
+  } else {
+    series = computeTriggerActivity().map((item, index) => ({
+      label: item.label,
+      rawLabel: item.label,
+      value: item.value,
+      meta: `活跃增量 +${item.delta}`,
+      accent: palette[index % palette.length],
+    }));
+    timelineTitle.textContent = "触发词活跃度";
+    timelineMeta.textContent = "Top 触发词";
+  }
+
+  timelineList.innerHTML = "";
+  const max = Math.max(...series.map((item) => item.value), 1);
+  series.forEach((item) => {
+    const row = document.createElement("div");
+    row.className = "timeline-item";
+    row.innerHTML = `
+      <div class="timeline-item-title">
+        <strong>${item.rawLabel}</strong>
+        <span>${formatNumber(item.value)}</span>
+      </div>
+      <div class="timeline-item-meta">${item.meta}</div>
+      <div class="timeline-bar">
+        <div class="timeline-bar-track">
+          <div class="timeline-bar-fill" style="width:${(item.value / max) * 100}%;background:linear-gradient(90deg, ${item.accent}, #ff8b2b)"></div>
+        </div>
+      </div>
+    `;
+    timelineList.appendChild(row);
+  });
+
+  if (!d3) return;
+  timelineChart.innerHTML = "";
+  const width = timelineChart.clientWidth - 36;
+  const height = 220;
+  const svg = d3
+    .select(timelineChart)
+    .append("svg")
+    .attr("class", "timeline-svg")
+    .attr("viewBox", `0 0 ${width} ${height}`);
+
+  const x = d3
+    .scalePoint()
+    .domain(series.map((item) => item.label))
+    .range([22, width - 22]);
+  const y = d3
+    .scaleLinear()
+    .domain([0, max * 1.15])
+    .range([height - 30, 20]);
+
+  svg
+    .append("path")
+    .datum(series)
+    .attr(
+      "d",
+      d3
+        .line()
+        .x((d) => x(d.label))
+        .y((d) => y(d.value))
+        .curve(d3.curveCatmullRom.alpha(0.65))
+    )
+    .attr("fill", "none")
+    .attr("stroke", "#7de9db")
+    .attr("stroke-width", 5)
+    .attr("stroke-linecap", "round");
+
+  svg
+    .selectAll("circle")
+    .data(series)
+    .join("circle")
+    .attr("cx", (d) => x(d.label))
+    .attr("cy", (d) => y(d.value))
+    .attr("r", 7)
+    .attr("fill", (d) => d.accent)
+    .attr("stroke", "#fff")
+    .attr("stroke-width", 2);
+
+  svg
+    .selectAll("text.label")
+    .data(series)
+    .join("text")
+    .attr("x", (d) => x(d.label))
+    .attr("y", height - 8)
+    .attr("text-anchor", "middle")
+    .attr("font-size", 11)
+    .attr("fill", "#8d8b87")
+    .text((d) => d.label);
+}
+
 function setDonutSegment(node, percent, offsetPercent) {
   const dash = donutCircumference * percent;
   const offset = donutCircumference * (1 - offsetPercent);
@@ -659,15 +880,11 @@ function renderDynamicGraph() {
     .style("cursor", "pointer")
     .on("click", (_, d) => {
       if (d.kind === "skill" && d.item) {
-        setActiveDetail(d.item);
-        setPage("skills");
+        renderClusterPanel({ type: "skill", label: d.label, item: d.item });
       } else if (d.kind === "category") {
-        openSkillsWithCategory(d.label);
+        renderClusterPanel({ type: "category", label: d.label });
       } else if (d.kind === "token") {
-        triggerSearchQuery = d.label.replace(/^#/, "");
-        if (triggerSearchInput) triggerSearchInput.value = triggerSearchQuery;
-        renderTriggerList();
-        setPage("triggers");
+        renderClusterPanel({ type: "token", label: d.label });
       }
     });
 
@@ -725,7 +942,9 @@ function renderAll() {
   renderTriggerList();
   renderAppGrid();
   renderAnalyticsCharts();
+  renderTimeline();
   renderDynamicGraph();
+  renderClusterPanel(insightFocus);
   if (!selectedItemId) {
     const first = getFilteredItems()[0];
     if (first) setActiveDetail(first);
@@ -815,6 +1034,14 @@ function setupEvents() {
       chartMode = button.dataset.chartMode;
       chartModeButtons.forEach((node) => node.classList.toggle("is-active", node.dataset.chartMode === chartMode));
       renderDynamicGraph();
+      renderClusterPanel({ type: "hint" });
+    })
+  );
+  timelineModeButtons.forEach((button) =>
+    button.addEventListener("click", () => {
+      timelineMode = button.dataset.timelineMode;
+      timelineModeButtons.forEach((node) => node.classList.toggle("is-active", node.dataset.timelineMode === timelineMode));
+      renderTimeline();
     })
   );
   graphCenterButton?.addEventListener("click", () => runGraphAction("center"));
@@ -827,6 +1054,7 @@ function setupEvents() {
 
 setupEvents();
 clearDetail();
+renderClusterPanel({ type: "hint" });
 setPage("home");
 loadPortfolio().catch((error) => {
   if (grid) {

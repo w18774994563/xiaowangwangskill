@@ -66,14 +66,7 @@
 
       <main class="main-shell">
         <header class="topbar">
-          <div class="topbar-copy">
-            <strong data-page-title>首页</strong>
-            <span data-page-summary>快速浏览技能、分类和同步状态。</span>
-          </div>
-          <div class="topbar-actions">
-            <button class="sync-button" type="button" data-sync-button>⟳ 重新同步数据</button>
-            <button class="ghost-select" type="button" data-favorites-toggle>只看收藏</button>
-          </div>
+          <div class="topbar-spacer"></div>
         </header>
 
         <div class="page-stack">
@@ -405,6 +398,57 @@
                 </div>
               </article>
 
+              <article class="chart-card cluster-card">
+                <div class="chart-head chart-head-stack">
+                  <div>
+                    <span class="chart-kicker">Cluster View</span>
+                    <h3>关联簇</h3>
+                  </div>
+                  <span data-cluster-kind>未选择</span>
+                </div>
+                <div class="cluster-hero">
+                  <strong data-cluster-title>点击关系图中的节点</strong>
+                  <p data-cluster-summary>这里会展示该技能、分类或触发词的相关簇。</p>
+                </div>
+                <div class="cluster-section">
+                  <div class="cluster-section-head">
+                    <h4>关联技能</h4>
+                    <span data-cluster-count>0 项</span>
+                  </div>
+                  <div class="cluster-list" data-cluster-skills></div>
+                </div>
+                <div class="cluster-section">
+                  <div class="cluster-section-head">
+                    <h4>关联标签</h4>
+                  </div>
+                  <div class="cluster-chips" data-cluster-tags></div>
+                </div>
+              </article>
+
+              <article class="chart-card chart-card-wide timeline-card">
+                <div class="chart-head chart-head-stack">
+                  <div>
+                    <span class="chart-kicker">Timeline Insight</span>
+                    <h3>时间维度</h3>
+                  </div>
+                  <div class="chart-pills">
+                    <button class="chart-pill is-active" type="button" data-timeline-mode="recent">最近更新</button>
+                    <button class="chart-pill" type="button" data-timeline-mode="heat">热度变化</button>
+                    <button class="chart-pill" type="button" data-timeline-mode="trigger">触发词活跃度</button>
+                  </div>
+                </div>
+                <div class="timeline-layout">
+                  <div class="timeline-chart" data-timeline-chart></div>
+                  <div class="timeline-side">
+                    <div class="timeline-side-head">
+                      <strong data-timeline-title>最近更新</strong>
+                      <span data-timeline-meta>Top 6</span>
+                    </div>
+                    <div class="timeline-list" data-timeline-list></div>
+                  </div>
+                </div>
+              </article>
+
               <article class="chart-card signal-card">
                 <div class="chart-head chart-head-stack">
                   <div>
@@ -474,6 +518,11 @@
               </article>
             </section>
           </section>
+        </div>
+
+        <div class="utility-dock">
+          <button class="sync-button" type="button" data-sync-button>⟳ 重新同步数据</button>
+          <button class="ghost-select" type="button" data-favorites-toggle>只看收藏</button>
         </div>
       </main>
     </div>
