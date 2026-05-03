@@ -6,100 +6,167 @@
     <title>小汪汪 Skills</title>
     <meta
       name="description"
-      content="基于飞书多维表格驱动的技能目录网站，支持分类筛选、详情查看与自动同步。"
+      content="基于飞书多维表格驱动的技能目录网站，支持搜索、分类浏览、详情查看与自动同步。"
     />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Noto+Sans+SC:wght@400;500;700&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Manrope:wght@400;500;600;700;800&family=Noto+Sans+SC:wght@400;500;700&display=swap"
       rel="stylesheet"
     />
     <link rel="stylesheet" href="./assets/styles.css" />
   </head>
   <body>
-    <canvas class="aurora" aria-hidden="true"></canvas>
+    <div class="noise" aria-hidden="true"></div>
+    <div class="orb orb-left" aria-hidden="true"></div>
+    <div class="orb orb-right" aria-hidden="true"></div>
+
     <div class="page-shell">
       <header class="topbar" data-topbar>
-        <a class="brand" href="#hero">小汪汪</a>
+        <a class="brand" href="#hero">
+          <span class="brand-mark">WW</span>
+          <span class="brand-copy">
+            <strong>小汪汪 Skills</strong>
+            <span>Feishu Bitable Directory</span>
+          </span>
+        </a>
         <nav class="nav">
-          <a href="#works">作品</a>
-          <a href="#about">关于</a>
-          <a href="#contact">联系</a>
+          <a href="#database">数据库</a>
+          <a href="#overview">概览</a>
+          <a href="#sync">同步链路</a>
         </nav>
       </header>
 
       <main>
         <section class="hero section" id="hero">
-          <div class="hero-copy reveal">
-            <p class="eyebrow">Feishu Bitable Powered Portfolio</p>
-            <h1>小汪汪 Skills 导航站</h1>
+          <div class="hero-main reveal">
+            <p class="eyebrow">Skill Navigation System</p>
+            <h1>把 309 条技能变成一个真的能查、能看、能扩展的目录站。</h1>
             <p class="hero-text">
-              数据直接来自飞书多维表格，前台自动渲染分类筛选、技能卡片与关键词检索线索。
-              当前站点已经接通飞书同步链路，适合做技能库、能力目录和内部工具导航。
+              这不是静态卡片堆。它现在是一套面向检索和浏览的技能数据库界面，数据由飞书多维表格驱动，
+              前台负责搜索、分类、详情和自动刷新。
             </p>
             <div class="hero-actions">
-              <a class="button button-primary" href="#works">查看技能</a>
-              <a class="button button-ghost" href="#contact">继续扩展</a>
+              <a class="button button-primary" href="#database">进入数据库</a>
+              <a class="button button-ghost" href="#sync">查看同步机制</a>
             </div>
           </div>
-          <div class="hero-metrics reveal">
-            <article class="metric">
-              <span class="metric-value" data-count="0" data-counter="items">0</span>
-              <span class="metric-label">已接入技能</span>
-            </article>
-            <article class="metric">
-              <span class="metric-value" data-count="0" data-counter="categories">0</span>
-              <span class="metric-label">分类维度</span>
-            </article>
-            <article class="metric">
-              <span class="metric-value" data-counter="updated">--</span>
-              <span class="metric-label">最近刷新</span>
-            </article>
-          </div>
+
+          <aside class="hero-side reveal">
+            <div class="hero-panel hero-panel-search">
+              <div class="panel-heading">
+                <span>即时搜索</span>
+                <kbd>/</kbd>
+              </div>
+              <label class="search-box" for="skill-search">
+                <span class="search-icon">⌕</span>
+                <input
+                  id="skill-search"
+                  data-search
+                  type="search"
+                  placeholder="搜索技能名、功能或触发词"
+                  autocomplete="off"
+                />
+              </label>
+              <p class="panel-note">支持技能名、功能描述、触发词联搜。</p>
+            </div>
+
+            <div class="hero-panel hero-panel-metrics">
+              <article>
+                <span class="metric-value" data-counter="items">0</span>
+                <span class="metric-label">技能总数</span>
+              </article>
+              <article>
+                <span class="metric-value" data-counter="categories">0</span>
+                <span class="metric-label">分类数量</span>
+              </article>
+              <article>
+                <span class="metric-value" data-counter="updated">--</span>
+                <span class="metric-label">最近同步</span>
+              </article>
+            </div>
+          </aside>
         </section>
 
-        <section class="section section-band reveal" id="about">
-          <div class="section-heading">
-            <p class="eyebrow">About</p>
-            <h2>从飞书表格直接生成技能目录</h2>
-          </div>
-          <div class="about-grid">
-            <article class="panel">
-              <h3>目录展示</h3>
-              <p>飞书表格维护技能条目，网站负责分类浏览、关键词提示和详情阅读。</p>
-            </article>
-            <article class="panel">
-              <h3>刷新机制</h3>
-              <p>仓库内置 `refresh.py` 和 GitHub Actions，可周期性同步表格内容。</p>
-            </article>
-            <article class="panel">
-              <h3>视觉方向</h3>
-              <p>科技动态感主题，带滚动 reveal、悬停反馈、详情弹层和实时统计。</p>
-            </article>
-          </div>
-        </section>
-
-        <section class="section" id="works">
+        <section class="overview section" id="overview">
           <div class="section-heading reveal">
-            <p class="eyebrow">Works</p>
-            <h2>技能目录</h2>
+            <p class="eyebrow">Overview</p>
+            <h2>不是展示页，是技能操作台。</h2>
           </div>
-          <div class="filters reveal" data-filters></div>
-          <div class="grid" data-grid>
-            <article class="empty-state">正在加载技能数据...</article>
+          <div class="overview-grid reveal">
+            <article class="overview-card">
+              <span class="overview-index">01</span>
+              <h3>高密度信息结构</h3>
+              <p>技能名、功能、触发词和分类一屏直达，去掉无意义的装饰图。</p>
+            </article>
+            <article class="overview-card">
+              <span class="overview-index">02</span>
+              <h3>检索优先交互</h3>
+              <p>搜索框常驻首屏，分类带数量，详情层支持复制触发词。</p>
+            </article>
+            <article class="overview-card">
+              <span class="overview-index">03</span>
+              <h3>可持续同步</h3>
+              <p>飞书表格是内容源，GitHub Pages 是发布面，刷新脚本负责自动更新。</p>
+            </article>
           </div>
         </section>
 
-        <section class="section section-band reveal" id="contact">
-          <div class="contact-layout">
-            <div>
-              <p class="eyebrow">Contact</p>
-              <h2>后续可继续扩展</h2>
+        <section class="database section" id="database">
+          <div class="section-heading reveal">
+            <p class="eyebrow">Database</p>
+            <h2>技能数据库</h2>
+          </div>
+
+          <div class="database-layout">
+            <aside class="filter-rail reveal">
+              <div class="rail-block">
+                <p class="rail-title">分类</p>
+                <div class="filters" data-filters></div>
+              </div>
+              <div class="rail-block">
+                <p class="rail-title">当前状态</p>
+                <div class="rail-status">
+                  <p>当前筛选：<span data-active-category>全部</span></p>
+                  <p>搜索词：<span data-active-query>无</span></p>
+                  <p>命中结果：<span data-result-count>0</span></p>
+                </div>
+              </div>
+            </aside>
+
+            <div class="database-main reveal">
+              <div class="result-toolbar">
+                <p class="toolbar-title">按功能浏览，按触发词调用。</p>
+                <button class="button button-ghost button-small" type="button" data-clear-search>
+                  清空搜索
+                </button>
+              </div>
+              <div class="results" data-grid>
+                <article class="empty-state">正在加载技能数据...</article>
+              </div>
             </div>
-            <div class="contact-card">
-              <p>可以继续补搜索、详情页、技能分组说明、外链跳转和文档联动。</p>
-              <p>当前数据源：飞书多维表格</p>
-              <p>部署方式：静态站 + 自动同步</p>
+          </div>
+        </section>
+
+        <section class="sync section" id="sync">
+          <div class="section-heading reveal">
+            <p class="eyebrow">Sync</p>
+            <h2>同步链路</h2>
+          </div>
+          <div class="sync-band reveal">
+            <div class="sync-step">
+              <strong>01</strong>
+              <p>飞书多维表格维护技能内容</p>
+            </div>
+            <div class="sync-line"></div>
+            <div class="sync-step">
+              <strong>02</strong>
+              <p><code>refresh.py</code> 拉取并生成 JSON</p>
+            </div>
+            <div class="sync-line"></div>
+            <div class="sync-step">
+              <strong>03</strong>
+              <p>GitHub Pages 发布目录站</p>
             </div>
           </div>
         </section>
@@ -115,23 +182,30 @@
           <p data-modal-meta></p>
         </div>
         <div class="modal-detail" data-modal-detail></div>
+        <div class="modal-actions">
+          <button class="button button-primary button-small" type="button" data-copy-trigger>
+            复制触发词
+          </button>
+        </div>
       </div>
     </dialog>
 
     <template id="work-card-template">
-      <article class="card">
-        <button class="card-media" type="button">
-          <img alt="" loading="lazy" />
-          <span class="play-badge">详情</span>
-        </button>
-        <div class="card-body">
-          <div class="card-topline">
-            <p class="card-category"></p>
-            <p class="card-duration"></p>
+      <article class="result-card">
+        <button class="result-card-hitbox" type="button">
+          <div class="result-card-head">
+            <div class="result-card-symbol" aria-hidden="true"></div>
+            <div>
+              <p class="result-card-category"></p>
+              <h3 class="result-card-title"></h3>
+            </div>
           </div>
-          <h3 class="card-title"></h3>
-          <p class="card-tools"></p>
-        </div>
+          <p class="result-card-tools"></p>
+          <div class="result-card-foot">
+            <span class="result-card-trigger"></span>
+            <span class="result-card-order"></span>
+          </div>
+        </button>
       </article>
     </template>
 
